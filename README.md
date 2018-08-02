@@ -1,4 +1,4 @@
-# HCPPipelinesSingularity
+# HCPpipelinesSingularity
 
 Files related to running the [HCP][HCP] Pipelines using Singularity.
 
