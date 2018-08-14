@@ -1,0 +1,264 @@
+Bootstrap: docker
+From: centos:latest
+
+%help
+	CentOS 7 Singularity container for StructuralPreprocessing & FunctionalPreprocessing pipelines
+	
+	For more help, type
+		singularity help --app StructuralPreprocessing Singularity_Container.simg
+		singularity help --app FunctionalPreprocessing Singularity_Container.simg
+		singularity help --app StructuralPreprocessingCheckData Singularity_Container.simg
+		singularity help --app FunctionalPreprocessingCheckData Singularity_Container.simg
+	
+%labels
+	Version v1.0
+	Maintainer Me
+
+%setup
+	mkdir -p ${SINGULARITY_ROOTFS}/export/HCP/gradient_coefficient_files
+	mkdir -p ${SINGULARITY_ROOTFS}/export/freesurfer_license
+	
+%files		##########	Need gradient_coefficient_files!!!	&&	freesurfer license key file from https://surfer.nmr.mgh.harvard.edu/fswiki/License
+	/root/Downloads/xnat_pbs_jobs_container/gradient_coefficient_files/* /export/HCP/gradient_coefficient_files/
+	/root/Downloads/xnat_pbs_jobs_container/license.txt /export/freesurfer_license/
+	
+%post
+	yum -y update && yum -y upgrade
+	yum install -y wget tar.x86_64 gzip unzip git which bzip2 bc hostname tcsh libgomp libGLU libXmu gcc qt5-qtbase mesa-dri-drivers mesa-libGL-devel
+	mkdir -p /pipeline_tools/xnat_pbs_jobs
+	mkdir -p /HCP/intradb/archive
+	mkdir -p /HCP/hcpdb/archive
+	mkdir -p /HCP/hcpdb/build_ssd
+	cd /pipeline_tools
+	
+	####	xnat_pbs_jobs for singularity
+	wget https://github.com/Washington-University/xnat_pbs_jobs/archive/feature/singularity.tar.gz
+	tar xvf singularity.tar.gz -C /pipeline_tools/xnat_pbs_jobs --strip-components=1
+	rm singularity.tar.gz
+
+	####	miniconda
+	wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /pipeline_tools/miniconda.sh
+	bash /pipeline_tools/miniconda.sh -b -p /opt/miniconda
+	rm /pipeline_tools/miniconda.sh
+	export PATH=/opt/miniconda/bin:${PATH}
+	conda create -y --name singlepython3 python=3
+	source activate singlepython3
+	conda install -y requests
+	conda install -y pyqt
+	cd
+	
+	####	install freesurfer-6.0
+	wget ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.0/freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz
+	mkdir -p /export/freesurfer-6.0
+	tar -C /export/freesurfer-6.0 -xzvf freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz --strip-components=1
+	rm freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz
+	
+	####	intall epd-7.3.2
+	wget https://www.clear.rice.edu/comp140/downloads/epd/linux/epd-7.3-2-rh5-x86_64.sh
+	mkdir -p /export/HCP/epd-7.3.2
+	bash epd-7.3-2-rh5-x86_64.sh -b -p /export/HCP/epd-7.3.2
+	rm epd-7.3-2-rh5-x86_64.sh
+	
+	export PATH=/export/HCP/epd-7.3.2/bin:${PATH}
+	yum install -y epel-release
+	yum install -y python2-pip.noarch
+	pip2 install numpy
+	pip2 install nibabel --install-option="--prefix=/export/HCP/epd-7.3.2"
+	
+	#### 	gradunwarp
+	wget https://github.com/Washington-University/gradunwarp/archive/master.tar.gz -O gradunwarp.tar.gz
+	tar -xzvf gradunwarp.tar.gz
+	cd gradunwarp-master/
+	python setup.py install --prefix=/export/HCP/epd-7.3.2
+	cd
+	rm -r gradunwarp-master
+	rm gradunwarp.tar.gz
+	
+	####	install fsl 
+	wget http://www.fmrib.ox.ac.uk/fsldownloads/fsl-5.0.11-centos7_64.tar.gz
+	mkdir /export/fsl-5.0.11
+	tar -xvzf fsl-5.0.11-centos7_64.tar.gz -C /export/fsl-5.0.11 --strip-components=1
+	bash /export/fsl-5.0.11/etc/fslconf/post_install.sh -f /export/fsl-5.0.11
+	rm fsl-5.0.11-centos7_64.tar.gz
+	
+	####	install MSM_HOCR_v2
+	wget https://www.doc.ic.ac.uk/~ecr05/MSM_HOCR_v2/MSM_HOCR_v2-download.tgz
+	tar -xvzf MSM_HOCR_v2-download.tgz --strip-components=2 -C /export/HCP
+	rm MSM_HOCR_v2-download.tgz
+	
+	####	recon-all.v6.hires
+	wget https://gate.nmr.mgh.harvard.edu/safelinks/greve/recon-all.v6.hires -O /export/freesurfer-6.0/bin/recon-all.v6.hires
+	chmod 775 /export/freesurfer-6.0/bin/recon-all.v6.hires
+	
+	####	tess1mm
+	wget https://gate.nmr.mgh.harvard.edu/safelinks/greve/tess1mm -O /export/freesurfer-6.0/bin/tess1mm
+	chmod 775 /export/freesurfer-6.0/bin/tess1mm
+
+	####	install MCR/R2012b/v80
+	wget http://ssd.mathworks.com/supportfiles/MCR_Runtime/R2012b/MCR_R2012b_glnxa64_installer.zip
+	mkdir -p /export/matlab/MCR/R2012b/M
+	unzip MCR_R2012b_glnxa64_installer.zip -d /export/matlab/MCR/R2012b/M
+	/export/matlab/MCR/R2012b/M/install -mode silent -agreeToLicense yes -destinationFolder /export/matlab/MCR/R2012b
+	rm -rf /export/matlab/MCR/R2012b/M
+	rm MCR_R2012b_glnxa64_installer.zip
+	ln -s /export/matlab/MCR/R2012b/v80 /export/freesurfer-6.0/MCRv80
+
+	####	install workbench
+	wget https://ftp.humanconnectome.org/workbench/workbench-rh_linux64-v1.3.1.zip
+	unzip workbench-rh_linux64-v1.3.1.zip -d /export/HCP/
+	rm workbench-rh_linux64-v1.3.1.zip
+	
+	####	HCPpipelines
+	wget https://github.com/Washington-University/HCPpipelines/archive/feature/freesurfer_v6.tar.gz
+	mkdir -p /export/HCP/Pipelines
+	tar xvf freesurfer_v6.tar.gz -C /export/HCP/Pipelines --strip-components=1
+	rm freesurfer_v6.tar.gz
+	
+	####	copy gradient_coefficient_files
+	cp /export/HCP/gradient_coefficient_files/* /export/HCP/Pipelines/global/config/
+	
+	####	copy freesurfer license key file
+	cp /export/freesurfer_license/license.txt /export/freesurfer-6.0/
+		
+%environment
+	export PATH=/opt/miniconda/bin:${PATH}
+	source activate singlepython3
+	export XNAT_PBS_JOBS=/pipeline_tools/xnat_pbs_jobs
+	export FSLDIR=/export/fsl-5.0.11
+	source ${FSLDIR}/etc/fslconf/fsl.sh
+	export FSL_DIR="${FSLDIR}"
+	export FREESURFER_HOME=/export/freesurfer-6.0
+	source ${FREESURFER_HOME}/SetUpFreeSurfer.sh
+	export EPD_PYTHON_HOME=/export/HCP/epd-7.3.2
+	export PATH=${EPD_PYTHON_HOME}/bin:${PATH}
+	export CARET7DIR=/export/HCP/workbench/bin_rh_linux64
+	export HCPPIPEDIR=/export/HCP/Pipelines
+	export HCPPIPEDIR_Config=${HCPPIPEDIR}/global/config
+	export HCPPIPEDIR_Global=${HCPPIPEDIR}/global/scripts
+	export HCPPIPEDIR_Templates=${HCPPIPEDIR}/global/templates
+	export HCPPIPEDIR_PreFS=${HCPPIPEDIR}/PreFreeSurfer/scripts
+	export HCPPIPEDIR_FS=${HCPPIPEDIR}/FreeSurfer/scripts
+	export HCPPIPEDIR_PostFS=${HCPPIPEDIR}/PostFreeSurfer/scripts
+	export HCPPIPEDIR_fMRISurf=${HCPPIPEDIR}/fMRISurface/scripts
+	export HCPPIPEDIR_fMRIVol=${HCPPIPEDIR}/fMRIVolume/scripts
+	export HCPPIPEDIR_dMRI=${HCPPIPEDIR}/DiffusionPreprocessing/scripts
+	export HCPPIPEDIR_tfMRIAnalysis=${HCPPIPEDIR}/TaskfMRIAnalysis/scripts
+	export MSMBINDIR=/export/HCP/MSM_HOCR_v2/Centos
+	export MSMCONFIGDIR=${HCPPIPEDIR}/MSMConfig
+	export CLUSTER="2.0"
+	export PYTHONPATH=${XNAT_PBS_JOBS}/lib	
+		
+	
+%apprun StructuralPreprocessing
+	exec /pipeline_tools/xnat_pbs_jobs/StructuralPreprocessing/StructuralPreprocessing_singularity.XNAT_PROCESS "$@"
+
+%applabels StructuralPreprocessing
+	StructuralPreprocessing singularity PROCESS_DATA
+
+%apphelp StructuralPreprocessing
+    singularity run --app StructuralPreprocessing <Singularity_container.img> 
+		--project=<project>		 : XNAT project (e.g. MR_TEST)   
+		--subject=<subject>		 : XNAT subject ID within project (e.g. HCD0102210)    
+		--session=<session>		 : XNAT session ID within project (e.g. HCD0102210_V1_MR)  
+		--session-classifier=<classifier>: XNAT session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
+		[--fieldmap-type=<type>]	 : <type> values
+					GE: Siemens Gradient Echo Fieldmaps
+					SiemensGradientEcho: Siemens Gradient Echo Fieldmaps (equiv. to GE)
+					SE: Spin Echo Fieldmaps
+					SpinEcho: Spin Echo Fieldmaps (equiv. to SE)
+					NONE: No fieldmaps
+					If unspecified, defaults to GE 
+		--first-t1w-directory-name=<directory-name> : (e.g. T1w_MPR_vNav_4e_RMS)  
+		--first-t1w-resource-name=<resource-name>   : Name of XNAT session resource that contains the first T1w scan 
+							      (e.g. T1w_MPR_vNav_4e_RMS)
+		--first-t1w-file-name=<file-name>	    : Name of first T1w file 
+							      (e.g. HCD0102210_V1_MR_T1w_MPR_vNav_Norm_4e_RMS.nii.gz) 
+		[--second-t1w-directory-name=<directory-name>]  
+		[--second-t1w-resource-name=<resource-name>]: Name of XNAT session resource that contains the second T1w scan
+		[--second-t1w-file-name=<file-name>]	    : Name of second T1w file							
+		--first-t2w-directory-name=<directory-name> : (e.g. T2w_SPC_vNav)
+		--first-t2w-resource-name=<resource-name>   : Name of XNAT session resource that contains the first T2w scan 
+							      (e.g. T2w_SPC_vNav)
+		--first-t2w-file-name=<file-name>	    : Name of first T2w file 
+							      (e.g. HCD0102210_V1_MR_T2w_SPC_vNav_Norm.nii.gz)
+		[--second-t2w-directory-name=<directory-name>]
+		[--second-t2w-resource-name=<resource-name>]: Name of XNAT session resource that contains the second T2w scan
+		[--second-t2w-file-name=<file-name>]	    : Name of second T2w file
+		[--fieldmap-type=<type>] : <type> values
+				GE: Siemens Gradient Echo Fieldmaps
+				SiemensGradientEcho: Siemens Gradient Echo Fieldmaps (equiv. to GE)
+				SE: Spin Echo Fieldmaps
+				SpinEcho: Spin Echo Fieldmaps (equiv. to SE)
+				NONE: No fieldmaps
+				If unspecified, defaults to GE
+		[--seed=<rng-seed>]       : Random number generator seed for recon-all, passed to FreeSurferPipeline.sh script
+					    If unspecified, no seed value is passed to the FreeSurferPipeline.sh script.
+					    In that case, no seed value is passed to random number generator seed using tools.
+		[--brainsize=<brainsize>] : brainsize value passed to the PreFreeSurferPipeline.sh script. 
+					    If unspecified, the default value of 150 is used.   
+		--t1template=<name>       : MNI T1w template (e.g. MNI152_T1_0.8mm.nii.gz)
+		--t1templatebrain=<name>  : Brain extracted MNI T1w template (e.g. MNI152_T1_0.8mm_brain.nii.gz)
+		--t1template2mm=<name>    : MNI 2mm T1w template (e.g. MNI152_T1_2mm.nii.gz)
+		--t2template=<name>       : MNI T2w template (e.g. MNI152_T2_0.8mm.nii.gz)
+		--t2templatebrain=<name>  : Brain extracted MNI T2w template (e.g. MNI152_T2_0.8mm_brain.nii.gz)
+		--t2template2mm=<name>    : MNI 2mm T2w template (e.g. MNI152_T2_2mm.nii.gz)
+		--templatemask=<name>     : Brain mask MNI Template (e.g. MNI152_T1_0.8mm_brain_mask.nii.gz)
+		--template2mmmask=<name>  : Brain mask MNI 2mm Template (e.g. MNI152_T1_2mm_brain_mask_dil.nii.gz)
+		--fnirtconfig=<name>      : FNIRT 2mm Configuration file (e.g. T1_2_MNI152_2mm.cnf)
+		[--gdcoeffs=<name>]       : Gradient Distortion Coefficients file. 
+					    If not specified, this value defaults to NONE and 
+					    no gradient distortion correction is performed. 
+					    (e.g. Prisma_3T_coeff_AS82.grad)
+		[--topupconfig=<name>]    : Configuration file for topup or "NONE" if not used. Defaults to "NONE"  
+					    (e.g. b02b0.cnf)
+		--se-phase-pos=<name>     : (e.g. HCD0102210_V1_MR_SpinEchoFieldMap1_PA.nii.gz)  
+		--se-phase-neg=<name>     : (e.g. HCD0102210_V1_MR_SpinEchoFieldMap1_AP.nii.gz)  
+		--working-dir=<dir>       : Working directory in which to place retrieved data and in which to produce results 
+
+
+%apprun StructuralPreprocessingCheckData
+	exec /pipeline_tools/xnat_pbs_jobs/StructuralPreprocessing/StructuralPreprocessing.CHECK "$@"
+
+%applabels StructuralPreprocessingCheckData
+	StructuralPreprocessingCheckData singularity CHECK_DATA
+
+%apphelp StructuralPreprocessingCheckData
+	singularity run --app StructuralPreprocessingCheckData <Singularity_container.img>
+		--project=<project>		 : XNAT project (e.g. MR_TEST)   
+		--subject=<subject>		 : XNAT subject ID within project (e.g. HCD0102210)   
+		--classifier=<classifier>: XNAT session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
+		--working-dir=<dir>		 : Working directory in which to place retrieved data and in which to produce results 		
+
+
+%apprun FunctionalPreprocessing
+	exec /pipeline_tools/xnat_pbs_jobs/FunctionalPreprocessing/FunctionalPreprocessing_singularity.XNAT_PROCESS "$@"
+
+%applabels FunctionalPreprocessing
+	FunctionalPreprocessing singularity PROCESS_DATA
+
+%apphelp FunctionalPreprocessing
+	singularity run --app FunctionalPreprocessing <Singularity_container.img>
+		--project=<project>		 : XNAT project (e.g. MR_TEST)   
+		--subject=<subject>		 : XNAT subject ID within project (e.g. HCD0102210)   
+		--session=<session>		 : XNAT session ID within project (e.g. HCD0102210_V1_MR)   
+		--scan=<scan>			 : XNAT scan within subject (e.g. tfMRI_CARIT_PA, rfMRI_REST1_AP, etc)   
+		--session-classifier=<classifier>: XNAT session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
+		--dcmethod=<dcmethod>   	 : (e.g. TOPUP)  
+		--topupconfig=<topupconfig>      : (e.g. b02b0.cnf)
+		--gdcoeffs=<gdcoeffs>		 : (e.g. Prisma_3T_coeff_AS82.grad)
+		--working-dir=<dir>	    	 : Working directory in which to place retrieved data and in which to produce results 
+	
+
+%apprun FunctionalPreprocessingCheckData
+	exec /pipeline_tools/xnat_pbs_jobs/FunctionalPreprocessing/FunctionalPreprocessing.CHECK "$@"
+
+%applabels FunctionalPreprocessingCheckData
+	FunctionalPreprocessingCheckData singularity CHECK_DATA
+
+%apphelp FunctionalPreprocessingCheckData
+	singularity run --app FunctionalPreprocessingCheckData <Singularity_container.img>
+		--project=<project>		 : XNAT project (e.g. MR_TEST)   
+		--subject=<subject>		 : XNAT subject ID within project (e.g. HCD0102210)   
+		--classifier=<classifier>: XNAT session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
+		--scan=<scan>			 : XNAT scan within subject (e.g. tfMRI_CARIT_PA, rfMRI_REST1_AP, etc)   
+		--working-dir=<dir>		 : Working directory in which to place retrieved data and in which to produce results 
