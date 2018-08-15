@@ -1,7 +1,5 @@
-Bootstrap: yum
-OSVersion: 7
-MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/$basearch/
-Include: yum
+Bootstrap: docker
+From: centos:latest
 
 %help
 	CentOS 7 Singularity container for StructuralPreprocessing & FunctionalPreprocessing pipelines
@@ -21,8 +19,8 @@ Include: yum
 	mkdir -p ${SINGULARITY_ROOTFS}/export/freesurfer_license
 	
 %files		##########	Need gradient_coefficient_files!!!	&&	freesurfer license key file from https://surfer.nmr.mgh.harvard.edu/fswiki/License
-	/root/Downloads/xnat_pbs_jobs_container/gradient_coefficient_files/* /export/HCP/gradient_coefficient_files/
-	/root/Downloads/xnat_pbs_jobs_container/license.txt /export/freesurfer_license/
+	/home/j/Downloads/xnat_pbs_jobs_container/gradient_coefficient_files/* /export/HCP/gradient_coefficient_files/
+	/home/j/Downloads/xnat_pbs_jobs_container/license.txt /export/freesurfer_license/
 	
 %post
 	yum -y update && yum -y upgrade
@@ -118,9 +116,11 @@ Include: yum
 	
 	####	copy gradient_coefficient_files
 	cp /export/HCP/gradient_coefficient_files/* /export/HCP/Pipelines/global/config/
+	rm -rf /export/HCP/gradient_coefficient_files
 	
 	####	copy freesurfer license key file
 	cp /export/freesurfer_license/license.txt /export/freesurfer-6.0/
+	rm -rf /export/freesurfer_license
 		
 %environment
 	export PATH=/opt/miniconda/bin:${PATH}
@@ -264,4 +264,3 @@ Include: yum
 		--classifier=<classifier>: XNAT session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		--scan=<scan>			 : XNAT scan within subject (e.g. tfMRI_CARIT_PA, rfMRI_REST1_AP, etc)   
 		--working-dir=<dir>		 : Working directory in which to place retrieved data and in which to produce results 
-	
