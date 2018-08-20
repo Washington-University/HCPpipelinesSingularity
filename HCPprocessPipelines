@@ -152,7 +152,7 @@ From: centos:latest
 		
 	
 %apprun StructuralPreprocessing
-	exec /pipeline_tools/xnat_pbs_jobs/StructuralPreprocessing/StructuralPreprocessing_singularity.XNAT_PROCESS "$@"
+	exec /pipeline_tools/xnat_pbs_jobs/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS "$@"
 
 %applabels StructuralPreprocessing
 	StructuralPreprocessing singularity PROCESS_DATA
@@ -233,7 +233,7 @@ From: centos:latest
 
 
 %apprun FunctionalPreprocessing
-	exec /pipeline_tools/xnat_pbs_jobs/FunctionalPreprocessing/FunctionalPreprocessing_singularity.XNAT_PROCESS "$@"
+	exec /pipeline_tools/xnat_pbs_jobs/FunctionalPreprocessing/FunctionalPreprocessing.SINGULARITY_PROCESS "$@"
 
 %applabels FunctionalPreprocessing
 	FunctionalPreprocessing singularity PROCESS_DATA
