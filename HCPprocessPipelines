@@ -1,18 +1,22 @@
 Bootstrap: docker
-From: centos:latest
+From: centos:7.5.1804
 
 %help
 	CentOS 7 Singularity container for StructuralPreprocessing & FunctionalPreprocessing pipelines
+
+	To see what Singularity Apps are available, type:
+
+		singularity apps HCPprocessPipelines.img
+		
+	For more help on a particular App, type:
 	
-	For more help, type
-		singularity help --app StructuralPreprocessing Singularity_Container.simg
-		singularity help --app FunctionalPreprocessing Singularity_Container.simg
-		singularity help --app StructuralPreprocessingCheckData Singularity_Container.simg
-		singularity help --app FunctionalPreprocessingCheckData Singularity_Container.simg
-	
+		singularity help --app <app-name> HCPprocessPipelines.img
+
+		where <app-name> is one of the available Apps in the container
+		
 %labels
 	Version v1.0
-	Maintainer Me
+	Maintainer Connectome Coordination Facility
 
 %setup
 	mkdir -p ${SINGULARITY_ROOTFS}/export/HCP/gradient_coefficient_files
@@ -20,7 +24,9 @@ From: centos:latest
 	
 %files		##########	Need gradient_coefficient_files!!!	&&	freesurfer license key file from https://surfer.nmr.mgh.harvard.edu/fswiki/License
 	/home/j/Downloads/xnat_pbs_jobs_container/gradient_coefficient_files/* /export/HCP/gradient_coefficient_files/
+	# /home/tbb/gradient_coefficients_files/* /export/HCP/gradient_coefficient_files/	
 	/home/j/Downloads/xnat_pbs_jobs_container/license.txt /export/freesurfer_license/
+	# /home/tbb/FreeSurferLicense/license.txt /export/freesurfer_license/
 	
 %post
 	yum -y update && yum -y upgrade
