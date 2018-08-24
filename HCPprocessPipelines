@@ -23,10 +23,8 @@ From: centos:7.5.1804
 	mkdir -p ${SINGULARITY_ROOTFS}/export/freesurfer_license
 	
 %files		##########	Need gradient_coefficient_files!!!	&&	freesurfer license key file from https://surfer.nmr.mgh.harvard.edu/fswiki/License
-	/home/j/Downloads/xnat_pbs_jobs_container/gradient_coefficient_files/* /export/HCP/gradient_coefficient_files/
-	# /home/tbb/gradient_coefficients_files/* /export/HCP/gradient_coefficient_files/	
-	/home/j/Downloads/xnat_pbs_jobs_container/license.txt /export/freesurfer_license/
-	# /home/tbb/FreeSurferLicense/license.txt /export/freesurfer_license/
+	/home/tbb/gradient_coefficients_files/* /export/HCP/gradient_coefficient_files/	
+	/home/tbb/FreeSurferLicense/license.txt /export/freesurfer_license/
 	
 %post
 	yum -y update && yum -y upgrade
@@ -165,9 +163,7 @@ From: centos:7.5.1804
 
 %apphelp StructuralPreprocessing
     singularity run --app StructuralPreprocessing <Singularity_container.img> 
-		--project=<project>		 : XNAT project (e.g. MR_TEST)   
-		--subject=<subject>		 : XNAT subject ID within project (e.g. HCD0102210)    
-		--session=<session>		 : XNAT session ID within project (e.g. HCD0102210_V1_MR)  
+		--subject=<subject>		 : subject ID (e.g. 100307 or HCD0102210)    
 		--session-classifier=<classifier>: XNAT session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		[--fieldmap-type=<type>]	 : <type> values
 					GE: Siemens Gradient Echo Fieldmaps
