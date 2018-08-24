@@ -2,7 +2,7 @@ Bootstrap: docker
 From: centos:7.5.1804
 
 %help
-	CentOS 7 Singularity container for StructuralPreprocessing & FunctionalPreprocessing pipelines
+	CentOS 7.5.1804 Singularity container for StructuralPreprocessing & FunctionalPreprocessing pipelines
 
 	To see what Singularity Apps are available, type:
 
@@ -164,7 +164,7 @@ From: centos:7.5.1804
 %apphelp StructuralPreprocessing
     singularity run --app StructuralPreprocessing <Singularity_container.img> 
 		--subject=<subject>		 : subject ID (e.g. 100307 or HCD0102210)    
-		--session-classifier=<classifier>: XNAT session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
+		--session-classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		[--fieldmap-type=<type>]	 : <type> values
 					GE: Siemens Gradient Echo Fieldmaps
 					SiemensGradientEcho: Siemens Gradient Echo Fieldmaps (equiv. to GE)
@@ -173,20 +173,14 @@ From: centos:7.5.1804
 					NONE: No fieldmaps
 					If unspecified, defaults to GE 
 		--first-t1w-directory-name=<directory-name> : (e.g. T1w_MPR_vNav_4e_RMS)  
-		--first-t1w-resource-name=<resource-name>   : Name of XNAT session resource that contains the first T1w scan 
-							      (e.g. T1w_MPR_vNav_4e_RMS)
 		--first-t1w-file-name=<file-name>	    : Name of first T1w file 
 							      (e.g. HCD0102210_V1_MR_T1w_MPR_vNav_Norm_4e_RMS.nii.gz) 
 		[--second-t1w-directory-name=<directory-name>]  
-		[--second-t1w-resource-name=<resource-name>]: Name of XNAT session resource that contains the second T1w scan
 		[--second-t1w-file-name=<file-name>]	    : Name of second T1w file							
 		--first-t2w-directory-name=<directory-name> : (e.g. T2w_SPC_vNav)
-		--first-t2w-resource-name=<resource-name>   : Name of XNAT session resource that contains the first T2w scan 
-							      (e.g. T2w_SPC_vNav)
 		--first-t2w-file-name=<file-name>	    : Name of first T2w file 
 							      (e.g. HCD0102210_V1_MR_T2w_SPC_vNav_Norm.nii.gz)
 		[--second-t2w-directory-name=<directory-name>]
-		[--second-t2w-resource-name=<resource-name>]: Name of XNAT session resource that contains the second T2w scan
 		[--second-t2w-file-name=<file-name>]	    : Name of second T2w file
 		[--fieldmap-type=<type>] : <type> values
 				GE: Siemens Gradient Echo Fieldmaps
