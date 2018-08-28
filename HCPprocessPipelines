@@ -29,16 +29,16 @@ From: centos:7.5.1804
 %post
 	yum -y update && yum -y upgrade
 	yum install -y wget tar.x86_64 gzip unzip git which bzip2 bc hostname tcsh libgomp libGLU libXmu gcc qt5-qtbase mesa-dri-drivers mesa-libGL-devel
-	mkdir -p /pipeline_tools/xnat_pbs_jobs
+	mkdir -p /pipeline_tools/hcp_pipelines_run_utils
 	mkdir -p /HCP/intradb/archive
 	mkdir -p /HCP/hcpdb/archive
 	mkdir -p /HCP/hcpdb/build_ssd
 	cd /pipeline_tools
 	
-	####	xnat_pbs_jobs for singularity
-	wget https://github.com/Washington-University/xnat_pbs_jobs/archive/feature/singularity.tar.gz
-	tar xvf singularity.tar.gz -C /pipeline_tools/xnat_pbs_jobs --strip-components=1
-	rm singularity.tar.gz
+	####	hcp_pipelines_run_utils
+	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/master.tar.gz -O hcp_pipelines_run_utils.tar.gz
+	tar xvf hcp_pipelines_run_utils.tar.gz -C /pipeline_tools/hcp_pipelines_run_utils --strip-components=1
+	rm hcp_pipelines_run_utils.tar.gz
 
 	####	miniconda
 	wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /pipeline_tools/miniconda.sh
@@ -129,7 +129,7 @@ From: centos:7.5.1804
 %environment
 	export PATH=/opt/miniconda/bin:${PATH}
 	source activate singlepython3
-	export XNAT_PBS_JOBS=/pipeline_tools/xnat_pbs_jobs
+	export HCP_RUN_UTILS=/pipeline_tools/hcp_pipelines_run_utils
 	export FSLDIR=/export/fsl-5.0.11
 	source ${FSLDIR}/etc/fslconf/fsl.sh
 	export FSL_DIR="${FSLDIR}"
@@ -152,11 +152,10 @@ From: centos:7.5.1804
 	export MSMBINDIR=/export/HCP/MSM_HOCR_v2/Centos
 	export MSMCONFIGDIR=${HCPPIPEDIR}/MSMConfig
 	export CLUSTER="2.0"
-	export PYTHONPATH=${XNAT_PBS_JOBS}/lib	
-		
+	export PYTHONPATH=${HCP_RUN_UTILS}/lib
 	
 %apprun StructuralPreprocessing
-	exec /pipeline_tools/xnat_pbs_jobs/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS "$@"
+	exec /pipeline_tools/hcp_pipelines_run_utils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS "$@"
 
 %applabels StructuralPreprocessing
 	StructuralPreprocessing singularity PROCESS_DATA
@@ -215,7 +214,7 @@ From: centos:7.5.1804
 
 
 %apprun StructuralPreprocessingCheckData
-	exec /pipeline_tools/xnat_pbs_jobs/StructuralPreprocessing/StructuralPreprocessing.CHECK "$@"
+	exec /pipeline_tools/hcp_pipelines_run_utils/StructuralPreprocessing/StructuralPreprocessing.CHECK "$@"
 
 %applabels StructuralPreprocessingCheckData
 	StructuralPreprocessingCheckData singularity CHECK_DATA
@@ -229,7 +228,7 @@ From: centos:7.5.1804
 
 
 %apprun FunctionalPreprocessing
-	exec /pipeline_tools/xnat_pbs_jobs/FunctionalPreprocessing/FunctionalPreprocessing.SINGULARITY_PROCESS "$@"
+	exec /pipeline_tools/hcp_pipelines_run_utils/FunctionalPreprocessing/FunctionalPreprocessing.SINGULARITY_PROCESS "$@"
 
 %applabels FunctionalPreprocessing
 	FunctionalPreprocessing singularity PROCESS_DATA
@@ -248,7 +247,7 @@ From: centos:7.5.1804
 	
 
 %apprun FunctionalPreprocessingCheckData
-	exec /pipeline_tools/xnat_pbs_jobs/FunctionalPreprocessing/FunctionalPreprocessing.CHECK "$@"
+	exec /pipeline_tools/hcp_pipelines_run_utils/FunctionalPreprocessing/FunctionalPreprocessing.CHECK "$@"
 
 %applabels FunctionalPreprocessingCheckData
 	FunctionalPreprocessingCheckData singularity CHECK_DATA

@@ -11,7 +11,7 @@
 # The ${HOME}/data subdirectory is mounted and available within your HCPprocessPipelinesSandbox
 # as the /data directory. Thus the --working-dir= specification points to /data/mystudy.
 
-singularity run -B ${HOME}/data:/data --app StructuralPreprocessing \
+singularity run -B ${HOME}/data:/data --app StructuralPreprocessing HCPprocessPipelines.img \
 			--subject=100307 \
 			--session-classifier=3T \
 			--fieldmap-type=SiemensGradientEcho \
