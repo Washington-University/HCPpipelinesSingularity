@@ -1,0 +1,119 @@
+#!/bin/bash
+
+# This utility script demonstrates how to test run the Structural Preprocessing
+# on a CCF LifeSpan subject either from within the HCPprocessPipelines.img Singularity
+# container or from within the HCPprocessPipelinesSandbox.
+#
+# This assumes that you have a subdirectory of your home directory named 'data' and that
+# subdirectory contains another subdirectory named 'mystudy'. The 'mystudy' directory is
+# in standard HCP Pipelines format, with subdirectories for each subject named with the
+# subject's ID.
+#
+# The ${HOME}/data subdirectory is mounted and available within your HCPprocessPipelines
+# container or the HCPprocessPipelinesSandbox as the /data directory.
+# Thus the --working-dir= specification points to /data/mystudy.
+
+get_options()
+{
+	local arguments=($@)
+
+	# initialize global output variables
+	unset g_run_type
+
+	# parse arguments
+	local num_args=${#arguments[@]}
+	local argument
+	local index=0
+
+	while [ ${index} -lt ${num_args} ]; do
+		argument=${arguments[index]}
+
+		case ${argument} in
+			--run-type=*)
+				g_run_type=${argument/*=/""}
+				g_run_type=$(echo ${g_run_type} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--container)
+				g_run_type="CONTAINER"
+				index=$(( index + 1 ))
+				;;
+			--sandbox)
+				g_run_type="SANDBOX"
+				index=$(( index + 1 ))
+				;;
+			*)
+				echo "Unrecognized option: ${argument}"
+				exit 1
+				;;
+		esac
+
+	done
+
+	# check parameters
+
+	if [ -z "${g_run_type}" ]; then
+		echo "ERROR: run type (--run-type=, --container, or --sandbox) required"
+		exit 1
+	fi
+
+	if [ "${g_run_type}" != "CONTAINER" -a "${g_run_type}" != "SANDBOX" ]; then 
+		echo "ERROR: run type must be CONTAINER or SANDBOX"
+		exit 1
+	fi
+}
+
+main()
+{
+	get_options "$@"
+
+	local run_cmd
+	run_cmd=""
+
+	if [ "${g_run_type}" = "CONTAINER" ]; then
+		run_cmd+="singularity run  -B ${HOME}/data:/data --app StructuralPreprocessing HCPprocessPipelines.img"
+	elif [ "${g_run_type}" = "SANDBOX" ]; then
+		run_cmd+="singularity exec -B ${HOME}/data:/data HCPprocessPipelinesSandbox/ /pipeline_tools/hcp_pipelines_run_utils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"		
+	else
+		echo "ERROR: Unrecognized run type: ${g_run_type}"
+		exit 1
+	fi
+
+	run_cmd+=" --working-dir=/data/mystudy"
+	run_cmd+=" --subject=HCA6005242"
+	run_cmd+=" --classifier=V1_MR"
+	run_cmd+=" --brainsize=150"
+
+	run_cmd+=" --first-t1w-directory-name=T1w_MPR_vNav_4e_RMS"
+	run_cmd+=" --first-t1w-file-name=HCA6005242_V1_MR_T1w_MPR_vNav_4e_RMS.nii.gz"
+
+	run_cmd+=" --first-t2w-directory-name=T2w_SPC_vNav"
+	run_cmd+=" --first-t2w-file-name=HCA6005242_V1_MR_T2w_SPC_vNav.nii.gz"
+
+	run_cmd+=" --t1template=MNI152_T1_0.8mm.nii.gz"
+	run_cmd+=" --t1templatebrain=MNI152_T1_0.8mm_brain.nii.gz"
+	run_cmd+=" --t1template2mm=MNI152_T1_2mm.nii.gz"
+
+	run_cmd+=" --t2template=MNI152_T2_0.8mm.nii.gz"
+	run_cmd+=" --t2templatebrain=MNI152_T2_0.8mm_brain.nii.gz"
+	run_cmd+=" --t2template2mm=MNI152_T2_2mm.nii.gz"
+
+	run_cmd+=" --templatemask=MNI152_T1_0.8mm_brain_mask.nii.gz"
+	run_cmd+=" --template2mmmask=MNI152_T1_2mm_brain_mask_dil.nii.gz"
+
+	run_cmd+=" --fnirtconfig=T1_2_MNI152_2mm.cnf"
+	run_cmd+=" --gdcoeffs=Prisma_3T_coeff_AS82.grad"
+	run_cmd+=" --topupconfig=b02b0.cnf"
+
+	run_cmd+=" --fieldmap-type=SpinEcho"
+	run_cmd+=" --se-phase-pos=HCA6005242_V1_MR_SpinEchoFieldMap1_PA.nii.gz"
+	run_cmd+=" --se-phase-neg=HCA6005242_V1_MR_SpinEchoFieldMap1_AP.nii.gz"
+
+	echo "run_cmd: ${run_cmd}"
+
+	time ${run_cmd}
+}
+
+# Invoke the main function to get things started
+main "$@"
+
