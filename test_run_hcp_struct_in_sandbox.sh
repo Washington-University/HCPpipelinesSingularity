@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This utility script demonstrates how to test run the Structural Preprocessing from within the
-# HCPprocessPipelines.img Singularity container.
+# HCPprocessPipelinesSandbox on an HCP-YA subject.
 #
 # This assumes that you have a subdirectory of your home directory named 'data' and that
 # subdirectory contains another subdirectory named 'mystudy'. The 'mystudy' directory is
@@ -11,9 +11,9 @@
 # The ${HOME}/data subdirectory is mounted and available within your HCPprocessPipelinesSandbox
 # as the /data directory. Thus the --working-dir= specification points to /data/mystudy.
 
-singularity run -B ${HOME}/data:/data --app StructuralPreprocessing HCPprocessPipelines.img \
+time singularity exec -B ${HOME}/data:/data HCPprocessPipelinesSandbox/ /pipeline_tools/hcp_pipelines_run_utils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS \
 			--subject=100307 \
-			--session-classifier=3T \
+			--classifier=3T \
 			--fieldmap-type=SiemensGradientEcho \
 			--working-dir=/data/mystudy \
 			\

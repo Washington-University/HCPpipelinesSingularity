@@ -23,8 +23,8 @@ From: centos:7.5.1804
 	mkdir -p ${SINGULARITY_ROOTFS}/export/freesurfer_license
 	
 %files		##########	Need gradient_coefficient_files!!!	&&	freesurfer license key file from https://surfer.nmr.mgh.harvard.edu/fswiki/License
-	/home/tbb/gradient_coefficients_files/* /export/HCP/gradient_coefficient_files/	
-	/home/tbb/FreeSurferLicense/license.txt /export/freesurfer_license/
+	/home/tbb/projects/HCPpipelinesPrereqs/gradient_coefficients_files/* /export/HCP/gradient_coefficient_files/	
+	/home/tbb/projects/HCPpipelinesPrereqs/FreeSurferLicense/license.txt /export/freesurfer_license/
 	
 %post
 	yum -y update && yum -y upgrade
@@ -163,7 +163,7 @@ From: centos:7.5.1804
 %apphelp StructuralPreprocessing
     singularity run --app StructuralPreprocessing <Singularity_container.img> 
 		--subject=<subject>		 : subject ID (e.g. 100307 or HCD0102210)    
-		--session-classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
+		--classifier=<classifier>: classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		[--fieldmap-type=<type>]	 : <type> values
 					GE: Siemens Gradient Echo Fieldmaps
 					SiemensGradientEcho: Siemens Gradient Echo Fieldmaps (equiv. to GE)

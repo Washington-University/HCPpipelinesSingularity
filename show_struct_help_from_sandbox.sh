@@ -3,5 +3,5 @@
 # This utility script will show you the help provided by the Structural Preprocessing app
 # within the HCPprocessingPipelinesSandbox
 
-singularity exec HCPprocessPipelinesSandbox/ /pipeline_tools/xnat_pbs_jobs/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS --help
+time singularity exec HCPprocessPipelinesSandbox/ /pipeline_tools/xnat_pbs_jobs/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS --help
 
