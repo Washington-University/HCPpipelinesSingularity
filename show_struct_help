@@ -44,7 +44,7 @@ get_options()
 	# check parameters
 
 	if [ -z "${g_run_type}" ]; then
-		echo "ERROR: run type (--run-type=, --container, or --sandbox) required"
+		echo "ERROR: run type (--run-type=[CONTAINER|SANDBOX], --container, or --sandbox) required"
 		exit 1
 	fi
 

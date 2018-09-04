@@ -7,4 +7,5 @@
 # This assumes you have sudoer privileges on the system on which you are trying to
 # build the sandbox.
 
+sudo rm -rf HCPprocessPipelinesSandbox
 time sudo singularity build --sandbox HCPprocessPipelinesSandbox/ HCPprocessPipelines.img
