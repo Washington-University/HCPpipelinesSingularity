@@ -73,7 +73,7 @@ main()
 	if [ "${g_run_type}" = "CONTAINER" ]; then
 		run_cmd+="singularity run  -B ${HOME}/data:/data --app StructuralPreprocessing HCPprocessPipelines.img"
 	elif [ "${g_run_type}" = "SANDBOX" ]; then
-		run_cmd+="singularity exec -B ${HOME}/data:/data HCPprocessPipelinesSandbox/ /pipeline_tools/hcp_pipelines_run_utils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+		run_cmd+="sudo singularity exec -B ${HOME}/data:/data HCPprocessPipelinesSandbox/ /pipeline_tools/hcp_pipelines_run_utils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
 	else
 		echo "ERROR: Unrecognized run type: ${g_run_type}"
 		exit 1

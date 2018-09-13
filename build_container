@@ -7,5 +7,7 @@
 # build the container. It also assumes you have Singularity properly installed
 # on the system on which you are trying to build the container.
 
-rm HCPprocessPipelines.img 
+if [ -f "HCPprocessPipelines.img" ]; then
+	rm HCPprocessPipelines.img
+fi
 time sudo singularity build HCPprocessPipelines.img HCPprocessPipelines
