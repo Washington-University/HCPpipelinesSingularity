@@ -255,11 +255,9 @@ From: centos:7.5.1804
 
 %apphelp FunctionalPreprocessing
 	singularity run --app FunctionalPreprocessing <Singularity_container.img>
-		--project=<project>		 : project (e.g. MR_TEST)   
 		--subject=<subject>		 : subject ID within project (e.g. HCD0102210)   
-		--session=<session>		 : session ID within project (e.g. HCD0102210_V1_MR)   
 		--scan=<scan>			 : scan within subject (e.g. tfMRI_CARIT_PA, rfMRI_REST1_AP, etc)   
-		--session-classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
+		--classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		--dcmethod=<dcmethod>   	 : (e.g. TOPUP)  
 		--topupconfig=<topupconfig>      : (e.g. b02b0.cnf)
 		--gdcoeffs=<gdcoeffs>		 : (e.g. Prisma_3T_coeff_AS82.grad)
