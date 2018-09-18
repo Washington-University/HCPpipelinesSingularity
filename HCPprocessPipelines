@@ -97,6 +97,7 @@ From: centos:7.5.1804
 	tar -xvzf fsl-5.0.11-centos7_64.tar.gz -C /export/fsl-5.0.11 --strip-components=1
 	bash /export/fsl-5.0.11/etc/fslconf/post_install.sh -f /export/fsl-5.0.11
 	rm fsl-5.0.11-centos7_64.tar.gz
+	shopt -s extglob
 	rm -rf /export/fsl-5.0.11/data/!(standard)
 	rm -rf /export/fsl-5.0.11/doc/*
 	rm -rf /export/fsl-5.0.11/fslpython/pkgs/*.tar.bz2
