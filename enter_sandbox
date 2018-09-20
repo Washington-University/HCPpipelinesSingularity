@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sudo singularity shell -B ${HOME}/data:/data HCPprocessPipelinesSandbox

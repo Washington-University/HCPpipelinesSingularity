@@ -12,3 +12,6 @@
 
 # Ignore generated Singularity Sandboxes
 *Sandbox
+
+# Ignore run logs
+runlog*
