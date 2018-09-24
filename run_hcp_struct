@@ -126,13 +126,13 @@ main()
 	# Bind your data directory
 	# Needs to show up as the /data directory in the Container/Sandbox
 
-	local where_data_is_on_my_system
+	local where_data_are_on_my_system
 	local where_data_must_be_in_container
 	
-	where_data_is_on_my_system="${HOME}/data"
+	where_data_are_on_my_system="${HOME}/data"
 	where_data_must_be_in_container="/data"
 
-	run_cmd+=" -B ${where_data_is_on_my_system}:${where_data_must_be_in_container}"
+	run_cmd+=" -B ${where_data_are_on_my_system}:${where_data_must_be_in_container}"
 
 	# Bind gradient coefficients files directory
 	# Needs to show up as the /export/HCP/gradient_coefficient_files directory in the Container/Sandbox

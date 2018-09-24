@@ -1,3 +1,16 @@
 #!/bin/bash
 
-sudo singularity shell -B ${HOME}/data:/data HCPprocessPipelinesSandbox
+where_data_are_on_my_system="${HOME}/data"
+where_data_must_be_in_container="/data"
+
+where_gc_files_are_on_my_system="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
+where_gc_files_must_be_in_container="/export/HCP/gradient_coefficient_files"
+
+where_license_file_is_on_my_system="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
+where_license_file_must_be_in_container="/export/freesurfer_license"
+
+sudo singularity shell \
+	 -B ${where_data_are_on_my_system}:${where_data_must_be_in_container} \
+	 -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container} \
+	 -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container} \
+	 HCPprocessPipelinesSandbox
