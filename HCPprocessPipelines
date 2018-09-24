@@ -1,9 +1,8 @@
 Bootstrap: docker
-#From: centos:latest
 From: centos:7.5.1804
 
 %help
-	CentOS 7 Singularity container for StructuralPreprocessing & FunctionalPreprocessing pipelines
+	CentOS 7.5.1804 Singularity container for StructuralPreprocessing & FunctionalPreprocessing pipelines
 	
 	To see what Singularity Apps are available, type:
 

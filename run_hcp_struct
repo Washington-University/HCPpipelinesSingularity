@@ -4,14 +4,58 @@
 # on an HCP-YA subject either from within the HCPprocessPipelines.img Singularity
 # container or from within the HCPprocessPipelinesSandbox.
 #
-# This assumes that you have a subdirectory of your home directory named 'data' and that
-# subdirectory contains another subdirectory named 'mystudy'. The 'mystudy' directory is
-# in standard HCP Pipelines format, with subdirectories for each subject named with the
-# subject's ID.
+# Directories that are bound from your local system to the container.
+# -------------------------------------------------------------------
 #
-# The ${HOME}/data subdirectory is mounted and available within your HCPprocessPipelines
-# container or the HCPprocessPipelinesSandbox as the /data directory.
-# Thus the --working-dir= specification points to /data/mystudy.
+# If the assumptions listed below are not true in your environment, you may need
+# to modify this script to run properly.
+#
+#   Data Directory
+#   --------------
+# 
+#   This script assumes that you have a directory named:
+#
+#     ${HOME}/data/mystudy
+#
+#   The 'mystudy' directory is assumed to be in the standard HCP Pipelines format,
+#   i.e. with subdirectories for each subject, with those subdirectories named with
+#   the subject's ID.
+#
+#   The ${HOME}/data directory is mounted/bound and available within the HCPprocessPipelines
+#   container or the HCPprocessPipelinesSandbox as the /data directory. Thus the value
+#   specified for the --working-dir= parameter when running the processing script is
+#   '/data/mystudy'.
+#
+#   Gradient Coefficient Files Directory
+#   ------------------------------------
+#
+#   This script assumes that you have a directory named:
+#
+#     ${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files
+#
+#   That 'gradient_coefficients_files' directory is assumed to contain the proprietary
+#   gradient distortion coefficients files for any scanners used in collecting your
+#   image data files.
+#
+#   The ${HOME}/projects/.../gradient_coefficients_files directory is mounted/bound
+#   within the HCPprocessPipelines container or the HCPprocessPipelinesSandbox as the
+#   /export/HCP/gradient_coefficient_files directory. This is where the gradient
+#   coefficients files must be found within the container.
+#
+#   FreeSurfer Licence File Directory
+#   ---------------------------------
+#
+#   This script assumes that you have a directory named:
+#
+#     ${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense
+#
+#   The 'FreeSurferLicense' directory is assumed to contain your FreeSurfer license
+#   in a file named: 'license.txt'
+#
+#   The ${HOME}/projects/.../FreeSurferLicense directory is mounted/bound
+#   within the HCPprocessPipelines container or the HCPprocessPipelinesSandbox as the
+#   /export/freesurfer_license directory. This is where the 'license.txt' file must
+#   be found within the container.
 
 get_options()
 {
@@ -70,19 +114,69 @@ main()
 	local run_cmd
 	run_cmd=""
 
+	# Base Singularity command
 	if [ "${g_run_type}" = "CONTAINER" ]; then
-		run_cmd+="singularity run  -B ${HOME}/data:/data --app StructuralPreprocessing HCPprocessPipelines.img"
+		run_cmd+="singularity run"
 	elif [ "${g_run_type}" = "SANDBOX" ]; then
-		run_cmd+="sudo singularity exec -B ${HOME}/data:/data HCPprocessPipelinesSandbox/ /pipeline_tools/hcp_pipelines_run_utils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+		run_cmd+="sudo singularity exec"
 	else
 		echo "ERROR: Unrecognized run type: ${g_run_type}"
-		exit 1
 	fi
 
+	# Bind your data directory
+	# Needs to show up as the /data directory in the Container/Sandbox
+
+	local where_data_is_on_my_system
+	local where_data_must_be_in_container
+	
+	where_data_is_on_my_system="${HOME}/data"
+	where_data_must_be_in_container="/data"
+
+	run_cmd+=" -B ${where_data_is_on_my_system}:${where_data_must_be_in_container}"
+
+	# Bind gradient coefficients files directory
+	# Needs to show up as the /export/HCP/gradient_coefficient_files directory in the Container/Sandbox
+
+	local where_gc_files_are_on_my_system
+	local where_gc_files_must_be_in_container
+	
+	where_gc_files_are_on_my_system="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
+	where_gc_files_must_be_in_container="/export/HCP/gradient_coefficient_files"
+	
+	run_cmd+=" -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container}"
+
+	# Bind folder with FreeSurfer License
+	# Needs to show up as the /export/freesurfer_license directory in the Container/Sandbox
+	# Must contain a file named 'license.txt'
+
+	local where_license_file_is_on_my_system
+	local where_license_file_must_be_in_container
+
+	where_license_file_is_on_my_system="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
+	where_license_file_must_be_in_container="/export/freesurfer_license"
+	
+	run_cmd+=" -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container}"
+
+	# Specify command or script to run
+	if [ "${g_run_type}" = "CONTAINER" ]; then
+		# application in the container to run
+		run_cmd+=" --app StructuralPreprocessing"
+		# container image file
+		run_cmd+=" HCPprocessPipelines.img"
+	elif [ "${g_run_type}" = "SANDBOX" ]; then
+		# sandbox directory
+		run_cmd+=" HCPprocessPipelinesSandbox/"
+		# full path to script within sandbox to execute
+		run_cmd+=" /pipeline_tools/hcp_pipelines_run_utils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+	else
+		echo "ERROR: Unrecognized run type: ${g_run_type}"
+	fi
+
+	# Add command line parameters for command/script to run
+	run_cmd+=" --working-dir=/data/mystudy"	# Note: this path is from within the container
 	run_cmd+=" --subject=100307"
 	run_cmd+=" --classifier=3T"
-	run_cmd+=" --fieldmap-type=SiemensGradientEcho"
-	run_cmd+=" --working-dir=/data/mystudy"
+	run_cmd+=" --brainsize=150"
 
 	run_cmd+=" --first-t1w-directory-name=T1w_MPR1"
 	run_cmd+=" --first-t1w-file-name=100307_3T_T1w_MPR1.nii.gz"
@@ -104,8 +198,8 @@ main()
 	run_cmd+=" --fnirtconfig=T1_2_MNI152_2mm.cnf"
 	run_cmd+=" --gdcoeffs=coeff_SC72C_Skyra.grad"
 	run_cmd+=" --topupconfig=b02b0.cnf"
-
-	run_cmd+=" --brainsize=150"
+	
+	run_cmd+=" --fieldmap-type=SiemensGradientEcho"
 
 	echo "run_cmd: ${run_cmd}"
 
