@@ -144,7 +144,7 @@ main()
 
 		# Add command line parameters for command/script to run
 		run_cmd+=" --working-dir=/data/mystudy"
-		run_cmd+=" --subject=HCA6005242"
+		run_cmd+=" --subject=${subject_id}"
 		run_cmd+=" --classifier=V1_MR"
 
 		echo "run_cmd: ${run_cmd}"
