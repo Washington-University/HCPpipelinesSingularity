@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# This utility script will build the SubmitHCPprocessPipelines.img Singularity container
+# image from the SubmitHCPprocessPipelines Singularity recipe file.
+#
+# This assumes you have sudoer privileges on the system on which you are trying to
+# build the container. It also assumes you have Singularity properly installed
+# on the system on which you are trying to build the container.
+
+if [ -f "SubmitHCPprocessPipelines.img" ]; then
+	rm HCPsubmitPipelines.img
+fi
+time sudo singularity build HCPsubmitPipelines.img HCPsubmitPipelines

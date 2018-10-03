@@ -1,0 +1,22 @@
+Bootstrap: docker
+#From: centos:7
+From: ubuntu
+
+%labels
+	Version v1.0
+	Maintainer Connectome Coordination Facility
+
+%post
+	mkdir -p /pipeline_tools/submissions/StructuralPreprocessing
+
+#%files
+#	StructuralPreprocessingSubmission.sh /pipeline_tools/submissions/StructuralPreprocessing/StructuralPreprocessingSubmission.sh
+	
+%environment
+	export HCP_PIPLINE_SUBMISSION=/pipeline_tools/submissions
+
+%apprun SubmitStructuralPreprocessing
+	exec /pipeline_tools/submissions/StructuralPreprocessing/StructuralPreprocessingSubmission.sh "%@"
+
+
+

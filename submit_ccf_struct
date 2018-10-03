@@ -1,0 +1,10 @@
+#!/bin/bash
+
+main()
+{
+	qsub /pipeline_tools/submissions/StructuralPreprocessing/StructuralPreprocessingSubmission.sh "yes" "sir"
+}
+
+# Invoke the main function to get things started
+main "$@"
+
