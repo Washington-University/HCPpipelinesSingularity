@@ -177,7 +177,6 @@ From: centos:7.5.1804
 	
 %apprun StructuralPreprocessing
 	exec /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS "$@"
-
 %applabels StructuralPreprocessing
 	StructuralPreprocessing singularity PROCESS_DATA
 
@@ -236,7 +235,6 @@ From: centos:7.5.1804
 
 %apprun StructuralPreprocessingCheckData
 	exec /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.CHECK "$@"
-
 %applabels StructuralPreprocessingCheckData
 	StructuralPreprocessingCheckData singularity CHECK_DATA
 
@@ -246,10 +244,8 @@ From: centos:7.5.1804
 		--classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		--working-dir=<dir>		 : Working directory in which to place retrieved data and in which to produce results 		
 
-
 %apprun FunctionalPreprocessing
 	exec /pipeline_tools/HCPpipelinesRunUtils/FunctionalPreprocessing/FunctionalPreprocessing.SINGULARITY_PROCESS "$@"
-
 %applabels FunctionalPreprocessing
 	FunctionalPreprocessing singularity PROCESS_DATA
 
@@ -263,10 +259,8 @@ From: centos:7.5.1804
 		--gdcoeffs=<gdcoeffs>		 : (e.g. Prisma_3T_coeff_AS82.grad)
 		--working-dir=<dir>	    	 : Working directory in which to place retrieved data and in which to produce results 
 	
-
 %apprun FunctionalPreprocessingCheckData
 	exec /pipeline_tools/HCPpipelinesRunUtils/FunctionalPreprocessing/FunctionalPreprocessing.CHECK "$@"
-
 %applabels FunctionalPreprocessingCheckData
 	FunctionalPreprocessingCheckData singularity CHECK_DATA
 
