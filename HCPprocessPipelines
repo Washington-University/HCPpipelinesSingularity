@@ -6,11 +6,11 @@ From: centos:7.5.1804
 	
 	To see what Singularity Apps are available, type:
 
-		singularity apps HCPprocessPipelines.img
+		singularity apps HCPprocessPipelines.simg
 		
 	For more help on a particular App, type:
 	
-		singularity help --app <app-name> HCPprocessPipelines.img
+		singularity help --app <app-name> HCPprocessPipelines.simg
 
 		where <app-name> is one of the available Apps in the container
 	
@@ -139,12 +139,10 @@ From: centos:7.5.1804
 	ln -s /export/freesurfer_license/license.txt /export/freesurfer-6.0/license.txt
 
 	####	recon-all.v6.hires
-	# wget https://gate.nmr.mgh.harvard.edu/safelinks/greve/recon-all.v6.hires -O /export/freesurfer-6.0/bin/recon-all.v6.hires
 	cp /export/HCP/Pipelines/FreeSurferCustomizations/recon-all.v6.hires /export/freesurfer-6.0/bin/recon-all.v6.hires
 	chmod 775 /export/freesurfer-6.0/bin/recon-all.v6.hires
 	
 	####	tess1mm
-	# wget https://gate.nmr.mgh.harvard.edu/safelinks/greve/tess1mm -O /export/freesurfer-6.0/bin/tess1mm
 	cp /export/HCP/Pipelines/FreeSurferCustomizations/tess1mm /export/freesurfer-6.0/bin/tess1mm
 	chmod 775 /export/freesurfer-6.0/bin/tess1mm
 
@@ -278,4 +276,4 @@ From: centos:7.5.1804
 		--subject=<subject>		 : subject ID within project (e.g. HCD0102210)   
 		--classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		--scan=<scan>			 : scan within subject (e.g. tfMRI_CARIT_PA, rfMRI_REST1_AP, etc)   
-		--working-dir=<dir>		 : Working directory in which to place retrieved data and in which to produce results 
+--working-dir=<dir> : Working directory in which to place retrieved data and in which to produce results 
