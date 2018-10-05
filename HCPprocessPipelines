@@ -126,10 +126,10 @@ From: centos:7.5.1804
 	rm -f /export/HCP/workbench/plugins_rh_linux64/plugins.zip
 	
 	####	HCPpipelines
-	wget https://github.com/Washington-University/HCPpipelines/archive/feature/freesurfer_v6.tar.gz
+	wget https://github.com/Washington-University/HCPpipelines/archive/feature/freesurfer_v6_latest.tar.gz
 	mkdir -p /export/HCP/Pipelines
-	tar xvf freesurfer_v6.tar.gz -C /export/HCP/Pipelines --strip-components=1
-	rm freesurfer_v6.tar.gz
+	tar xvf freesurfer_v6_latest.tar.gz -C /export/HCP/Pipelines --strip-components=1
+	rm freesurfer_v6_latest.tar.gz
 	
 	ln -s /export/HCP/gradient_coefficient_files/3TPrisma_coeff_AS82_trunc.grad /export/HCP/Pipelines/global/config/3TPrisma_coeff_AS82_trunc.grad
 	ln -s /export/HCP/gradient_coefficient_files/coeff_SC72C_Skyra.grad /export/HCP/Pipelines/global/config/coeff_SC72C_Skyra.grad
