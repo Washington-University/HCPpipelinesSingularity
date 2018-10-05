@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This utility script demonstrates how to test run the Structural Preprocessing Completion
-# Check on a CCF LifeSpan subject either from within the HCPprocessPipelines.img Singularity
+# Check on a CCF LifeSpan subject either from within the HCPprocessPipelines.simg Singularity
 # container or from within the HCPprocessPipelinesSandbox.
 #
 # This assumes that you have a subdirectory of your home directory named 'data' and that
@@ -131,7 +131,7 @@ main()
 			# application in the container to run
 			run_cmd+=" --app StructuralPreprocessingCheckData"
 			# container image file
-			run_cmd+=" HCPprocessPipelines.img"
+			run_cmd+=" HCPprocessPipelines.simg"
 		elif [ "${g_run_type}" = "SANDBOX" ]; then
 			# sandbox directory 
 			run_cmd+=" HCPprocessPipelinesSandbox/"

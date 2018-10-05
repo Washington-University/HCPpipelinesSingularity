@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This utility script demonstrates how to test run the Structural Preprocessing
-# on an HCP-YA subject either from within the HCPprocessPipelines.img Singularity
+# on an HCP-YA subject either from within the HCPprocessPipelines.simg Singularity
 # container or from within the HCPprocessPipelinesSandbox.
 #
 # Directories that are bound from your local system to the container.
@@ -189,7 +189,7 @@ main()
 			# application in the container to run
 			run_cmd+=" --app StructuralPreprocessing"
 			# container image file
-			run_cmd+=" HCPprocessPipelines.img"
+			run_cmd+=" HCPprocessPipelines.simg"
 		elif [ "${g_run_type}" = "SANDBOX" ]; then
 			# sandbox directory
 			run_cmd+=" HCPprocessPipelinesSandbox/"

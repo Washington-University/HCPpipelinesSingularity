@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This utility script will build the HCPprocessPipelines.img Singularity container
+# This utility script will build the HCPprocessPipelines.simg Singularity container
 # image from the HCPprocessPipelines Singularity recipe file.
 #
 # This assumes you have sudoer privileges on the system on which you are trying to
@@ -8,6 +8,6 @@
 # on the system on which you are trying to build the container.
 
 if [ -f "HCPprocessPipelines.img" ]; then
-	rm HCPprocessPipelines.img
+	rm HCPprocessPipelines.simg
 fi
-time sudo singularity build HCPprocessPipelines.img HCPprocessPipelines
+time sudo singularity build HCPprocessPipelines.simg HCPprocessPipelines

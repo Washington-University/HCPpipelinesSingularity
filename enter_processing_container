@@ -13,4 +13,4 @@ sudo singularity shell \
 	 -B ${where_data_are_on_my_system}:${where_data_must_be_in_container} \
 	 -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container} \
 	 -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container} \
-	 HCPprocessPipelines.img
+	 HCPprocessPipelines.simg

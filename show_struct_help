@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This utility script will show you the help provided by the Structural Preprocessing app
-# within the HCPprocessPipelines.img Singularity container or from within the
+# within the HCPprocessPipelines.simg Singularity container or from within the
 # HCPprocessingPipelinesSandbox.
 
 get_options()
@@ -62,7 +62,7 @@ main()
 	run_cmd=""
 
 	if [ "${g_run_type}" = "CONTAINER" ]; then
-		run_cmd+="singularity run  -B ${HOME}/data:/data --app StructuralPreprocessing HCPprocessPipelines.img"
+		run_cmd+="singularity run  -B ${HOME}/data:/data --app StructuralPreprocessing HCPprocessPipelines.simg"
 	elif [ "${g_run_type}" = "SANDBOX" ]; then
 		run_cmd+="singularity exec -B ${HOME}/data:/data HCPprocessPipelinesSandbox/ /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"		
 	else

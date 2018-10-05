@@ -181,7 +181,7 @@ From: centos:7.5.1804
 	StructuralPreprocessing singularity PROCESS_DATA
 
 %apphelp StructuralPreprocessing
-    singularity run --app StructuralPreprocessing <Singularity_container.img> 
+    singularity run --app StructuralPreprocessing <Singularity_container.simg> 
 		--subject=<subject>		 : subject ID (e.g. 100307 or HCD0102210)    
 		--classifier=<classifier>: classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		[--fieldmap-type=<type>]	 : <type> values
@@ -239,7 +239,7 @@ From: centos:7.5.1804
 	StructuralPreprocessingCheckData singularity CHECK_DATA
 
 %apphelp StructuralPreprocessingCheckData
-	singularity run --app StructuralPreprocessingCheckData <Singularity_container.img>
+	singularity run --app StructuralPreprocessingCheckData <Singularity_container.simg>
 		--subject=<subject>		 : subject ID within project (e.g. HCD0102210)   
 		--classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		--working-dir=<dir>		 : Working directory in which to place retrieved data and in which to produce results 		
@@ -250,7 +250,7 @@ From: centos:7.5.1804
 	FunctionalPreprocessing singularity PROCESS_DATA
 
 %apphelp FunctionalPreprocessing
-	singularity run --app FunctionalPreprocessing <Singularity_container.img>
+	singularity run --app FunctionalPreprocessing <Singularity_container.simg>
 		--subject=<subject>		 : subject ID within project (e.g. HCD0102210)   
 		--scan=<scan>			 : scan within subject (e.g. tfMRI_CARIT_PA, rfMRI_REST1_AP, etc)   
 		--classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
@@ -265,7 +265,7 @@ From: centos:7.5.1804
 	FunctionalPreprocessingCheckData singularity CHECK_DATA
 
 %apphelp FunctionalPreprocessingCheckData
-	singularity run --app FunctionalPreprocessingCheckData <Singularity_container.img>
+	singularity run --app FunctionalPreprocessingCheckData <Singularity_container.simg>
 		--subject=<subject>		 : subject ID within project (e.g. HCD0102210)   
 		--classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		--scan=<scan>			 : scan within subject (e.g. tfMRI_CARIT_PA, rfMRI_REST1_AP, etc)   
