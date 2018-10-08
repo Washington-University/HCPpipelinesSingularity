@@ -4,10 +4,10 @@
 # image from the HCPprocessPipelines Singularity recipe file.
 #
 # This assumes you have sudoer privileges on the system on which you are trying to
-# build the container. It also assumes you have Singularity properly installed
-# on the system on which you are trying to build the container.
+# build the container.
 
 if [ -f "HCPprocessPipelines.img" ]; then
 	rm HCPprocessPipelines.simg
 fi
+
 time sudo singularity build HCPprocessPipelines.simg HCPprocessPipelines
