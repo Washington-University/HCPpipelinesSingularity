@@ -1,70 +1,167 @@
 #!/bin/bash
 
-# This utility script demonstrates how to test run the Structural Preprocessing
-# on a CCF LifeSpan subject either from within the HCPprocessPipelines.simg Singularity
-# container or from within the HCPprocessPipelinesSandbox.
-#
-# Directories that are bound from your local system to the container.
-# -------------------------------------------------------------------
-#
-# If the assumptions listed below are not true in your environment, you may need
-# to modify this script to run properly.
-#
-#   Data Directory
-#   --------------
-# 
-#   This script assumes that you have a directory named:
-#
-#     ${HOME}/data/mystudy
-#
-#   The 'mystudy' directory is assumed to be in the standard HCP Pipelines format,
-#   i.e. with subdirectories for each subject, with those subdirectories named with
-#   the subject's ID.
-#
-#   The ${HOME}/data directory is mounted/bound and available within the HCPprocessPipelines
-#   container or the HCPprocessPipelinesSandbox as the /data directory. Thus the value
-#   specified for the --working-dir= parameter when running the processing script is
-#   '/data/mystudy'.
-#
-#   Gradient Coefficient Files Directory
-#   ------------------------------------
-#
-#   This script assumes that you have a directory named:
-#
-#     ${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files
-#
-#   That 'gradient_coefficients_files' directory is assumed to contain the proprietary
-#   gradient distortion coefficients files for any scanners used in collecting your
-#   image data files.
-#
-#   The ${HOME}/projects/.../gradient_coefficients_files directory is mounted/bound
-#   within the HCPprocessPipelines container or the HCPprocessPipelinesSandbox as the
-#   /export/HCP/gradient_coefficient_files directory. This is where the gradient
-#   coefficients files must be found within the container.
-#
-#   FreeSurfer Licence File Directory
-#   ---------------------------------
-#
-#   This script assumes that you have a directory named:
-#
-#     ${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense
-#
-#   The 'FreeSurferLicense' directory is assumed to contain your FreeSurfer license
-#   in a file named: 'license.txt'
-#
-#   The ${HOME}/projects/.../FreeSurferLicense directory is mounted/bound
-#   within the HCPprocessPipelines container or the HCPprocessPipelinesSandbox as the
-#   /export/freesurfer_license directory. This is where the 'license.txt' file must
-#   be found within the container.
+SCRIPT_NAME=$(basename "${0}")
+DEFAULT_STUDY_DIR="${HOME}/data/mystudy"
+DEFAULT_GRADIENT_COEFFS_DIR="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
+DEFAULT_FREESURFER_LICENSE_DIR="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
+DEFAULT_APP=PROCESS
 
+usage()
+{
+	cat <<EOF
+
+${SCRIPT_NAME}: 
+
+  This utility script demonstrates how to run Structural Preprocessing related
+  applications available within the HCPprocessPipelines.simg Singularity container 
+  or within the corresponding HCPprocessPipelinesSandbox on CCF subjects.
+
+Usage: ${SCRIPT_NAME}: PARAMETER ...
+
+PARAMETERS are: [ ] = optional; < > = user supplied value
+
+  [--help] : show this usage information and exit
+
+  Path to study directory
+  -----------------------
+
+  [--study-dir=<path-to-study-directory>]
+
+    The specified path will be bound (i.e. mounted) from your system
+    to a known location (/study) in the container or sandbox. This is 
+    where the study data must be found within the container or sandbox.
+
+    It is assumed that your study directory contains subdirectories that 
+    correspond to your subject IDs.
+
+    If you do not specify a study directory, the study directory will 
+    default to: ${DEFAULT_STUDY_DIR}.
+
+  Path to gradient coefficients files
+  -----------------------------------
+
+  [--gradient-coeffs-dir=<path-to-gradient-coefficients-directory>]
+
+    The specified path will be bound (i.e. mounted) from your system
+    to a known location (/export/HCP/gradient_coefficient_files) in the
+    container or sandbox. This is where the gradient coefficients
+    files must be found within the container or sandbox.
+
+    This gradient coefficients files directory must contain the
+    proprietary gradient coefficients files for any scanners used in 
+    collecting your image data files.
+
+    If you do not specify a gradient coefficients files directory, it will
+    default to: ${DEFAULT_GRADIENT_COEFFS_DIR}.  
+
+    NOTE: The path to the gradient coefficients files is only necessary
+    for actual processing of data. If you are running a completion
+    check, you can allow this to take its default value even if that
+    value is incorrect.  
+
+  Path to FreeSurfer license file
+  -------------------------------
+
+  [--freesurfer-license-dir=<path-to-freesurfer-license-directory>]
+
+    The specified path will be bound (i.e. mounted) from your system
+    to a known location (/export/freesurfer_license) in the container
+    or sandbox. This is where the FreeSurfer license file must be
+    found within the container or sandbox.
+
+    If you do not specify a FreeSurfer license directory, it will 
+    default to: ${DEFAULT_FREESURFER_LICENSE_DIR}.
+
+    NOTE: The path to the FreeSurfer license file is only necessary
+    for actual processing of data. If you are running a completion
+    check, you can allow this to take its default value even if that
+    value is incorrect.  
+
+  Specification of run type
+  -------------------------
+
+    You must specify whether to perform the requested processing
+    in the Singularity Container (HCPprocessPipelines.simg) or 
+    in the Singularity Sandbox (HCPprocessPipelinesSandbox/).
+
+    One of the following options must be specified:
+
+      --run-type=[CONTAINER|SANDBOX]
+      --container
+      --sandbox
+
+    The value specified for the --run-type= parameter is not case
+    sensitive, but must be either CONTAINER or SANDBOX. For example, 
+    --run-type=ConTAiner, --run-type=SandBox, and --run-type=sandbox
+    are all valid, but --run-type=CONTAIN is not valid.
+
+      --container is equivalent to --run-type=CONTAINER
+
+      --sandbox is equivalent to --run-type=SANDBOX
+
+    NOTE: To run within the Sandbox, you will need sudo privileges
+    on the machine on which you are running. When commands are run
+    with sudo, you may be prompted for your password to validate 
+    your sudo privileges. 
+
+  Subject List File
+  -----------------
+
+    You must specify a file containing a list of subject information lines. 
+
+    Each line in the subject file must contain the following information:
+
+      <subject-id>:<positive-spin-echo-fieldmap-name>:<negative-spin-echo-fieldmap-name>
+
+    Anything after a # on a line is considered a comment. To comment out a subject
+    information line, simply insert a # as the very first character on the line
+
+    Each subject information line will be parsed and the container or sandbox will 
+    be used to run the specified processing for the specified subject.
+
+  Processing
+  ----------
+
+    This script can run the actual Structural Preprocessing for the specified 
+    subjects or can run the completion check for Structural Preprocessing for
+    the specified subjects.
+
+    You can specify which type of processing using one of the following options:
+
+      --app=[PROCESS|CHECK]
+      --process
+      --check
+
+    The value specified for the --app= parameter is not case sensitive, but must be
+    either PROCESS or CHECK. For example, --app=Process, --app=PROCess, and 
+    --app=ChecK are all valid, but --app=PRO is not valid.
+
+      --process is equivalent to --app=PROCESS
+      
+      --check is equivalent to --app=CHECK
+
+    PROCESS means to run the actual Structural Preprocessing using the specified
+    subject information. CHECK means to run the Structural Preprocessing completion
+    check using the specified subject information.
+
+    If no --app= option or --process or --check is specified, this script 
+    defaults to --app=${DEFAULT_APP}.
+
+EOF
+}
+	
 get_options()
 {
 	local arguments=($@)
-
-	# initialize global output variables
-	unset g_run_type
-	unset g_subject_list_file
 	
+	# initialize global output variables
+	unset g_subject_list_file
+	g_study_dir="${DEFAULT_STUDY_DIR}"
+	g_gradient_coeffs_dir="${DEFAULT_GRADIENT_COEFFS_DIR}"
+	g_freesurfer_license_dir="${DEFAULT_FREESURFER_LICENSE_DIR}"
+	unset g_run_type
+	g_app="${DEFAULT_APP}"
+			
 	# parse arguments
 	local num_args=${#arguments[@]}
 	local argument
@@ -74,6 +171,22 @@ get_options()
 		argument=${arguments[index]}
 
 		case ${argument} in
+			--help)
+				usage
+				exit 1
+				;;
+			--study-dir=*)
+				g_study_dir=${argument/*=/""}
+				index=$(( index + 1 ))
+				;;
+			--gradient-coeffs_dir=*)
+				g_gradient_coeffs_dir=${argument/*=/""}
+				index=$(( index + 1 ))
+				;;
+			--freesurfer-license-dir=*)
+				g_freesurfer_license_dir=${argument/*=/""}
+				index=$(( index + 1 ))
+				;;
 			--run-type=*)
 				g_run_type=${argument/*=/""}
 				g_run_type=$(echo ${g_run_type} | tr '[:lower:]' '[:upper:]')
@@ -91,6 +204,19 @@ get_options()
 				g_subject_list_file=${argument/*=/""}
 				index=$(( index + 1 ))
 				;;
+			--app=*)
+				g_app=${argument/*=/""}
+				g_app=$(echo ${g_app} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--process)
+				g_app="PROCESS"
+				index=$(( index + 1 ))
+				;;
+			--check)
+				g_app="CHECK"
+				index=$(( index + 1 ))
+				;;
 			*)
 				echo "Unrecognized option: ${argument}"
 				exit 1
@@ -101,20 +227,69 @@ get_options()
 
 	# check parameters
 
+	if [ -n "${g_study_dir}" ]; then
+		echo "INFO: study directory: ${g_study_dir}"
+	else	
+		echo ""
+		echo "ERROR: --study-dir=<study-directory> must be specified"
+		echo ""
+		exit 1
+	fi
+
+	if [ -n "${g_gradient_coeffs_dir}" ]; then
+		echo "INFO: gradient coefficients directory: ${g_gradient_coeffs_dir}"
+	else
+		echo ""
+		echo "ERROR: --gradient-coeffs-dir=<gradient-coeffs-directory> must be specified"
+		echo ""
+		exit 1
+	fi
+
+	if [ -n "${g_freesurfer_license_dir}" ]; then
+		echo "INFO: FreeSurfer license directory: ${g_freesurfer_license_dir}"
+	else
+		echo ""
+		echo "ERROR: --freesurfer-license-dir=<freesurfer-license-directory> must be specified"
+		echo ""
+		exit 1
+	fi
+	
 	if [ -z "${g_run_type}" ]; then
+		echo ""
 		echo "ERROR: run type (--run-type=[CONTAINER|SANDBOX], --container, or --sandbox) required"
+		echo ""
 		exit 1
 	fi
 
 	if [ "${g_run_type}" != "CONTAINER" -a "${g_run_type}" != "SANDBOX" ]; then 
+		echo ""
 		echo "ERROR: run type must be CONTAINER or SANDBOX"
+		echo ""
 		exit 1
+	else
+		echo "INFO: Run Type: ${g_run_type}"
 	fi
 
 	if [ -n "${g_subject_list_file}" ]; then
 		echo "INFO: running processing for subjects listed in file: ${g_subject_list_file}"
 	else
+		echo ""
 		echo "ERROR: --subject-list=<subject-list-filename> must be specified"
+		echo ""
+		exit 1
+	fi
+
+	if [ -z "${g_app}" ]; then
+		echo ""
+		echo "ERROR: app to run (--run-type=[PROCESS|CHECK], --process, or --check) required"
+		echo ""
+		exit 1
+	fi
+
+	if [ "${g_app}" != "PROCESS" -a "${g_app}" != "CHECK" ]; then 
+		echo ""
+		echo "ERROR: app to run must be PROCESS or CHECK"
+		echo ""
 		exit 1
 	fi
 }
@@ -126,8 +301,8 @@ main()
 	local pos_fieldmap
 	local neg_fieldmap
 	local run_cmd
-	local where_data_are_on_my_system
-	local where_data_must_be_in_container
+	local where_study_is_on_my_system
+	local where_study_must_be_in_container
 	local where_gc_files_are_on_my_system
 	local where_gc_files_must_be_in_container
 	local where_license_file_is_on_my_system
@@ -136,6 +311,7 @@ main()
 	get_options "$@"
 	
 	while read -r line; do
+
 		# remove comments - anything after a #
 		line=${line%%\#*}
 		
@@ -155,95 +331,165 @@ main()
 		
 		neg_fieldmap=${line}			# neg_fieldmap is everything that is left
 
-		echo ""
-		echo "-- Running processing for subject: ${subject_id}:${pos_fieldmap}:${neg_fieldmap} --"
-		echo ""
 
-		run_cmd=""
-		
-		# Base Singularity command
-		if [ "${g_run_type}" = "CONTAINER" ]; then
-			run_cmd+="singularity run"
-		elif [ "${g_run_type}" = "SANDBOX" ]; then
-			run_cmd+="sudo singularity exec"
+		if [ "${g_app}" = "PROCESS" ]; then
+
+			echo ""
+			echo "-- Running processing for subject: ${subject_id}:${pos_fieldmap}:${neg_fieldmap} --"
+			echo ""
+			
+			run_cmd=""
+			
+			# Base Singularity command
+			if [ "${g_run_type}" = "CONTAINER" ]; then
+				run_cmd+="singularity run"
+			elif [ "${g_run_type}" = "SANDBOX" ]; then
+				run_cmd+="sudo singularity exec"
+			else
+				echo ""
+				echo "ERROR: Unrecognized run type: ${g_run_type}"
+				echo ""
+				exit 1
+			fi
+			
+			# Bind your study directory
+			# Needs to show up as the /data directory in the Container/Sandbox
+			where_study_is_on_my_system="${g_study_dir}"
+			where_study_must_be_in_container="/study"
+			
+			run_cmd+=" -B ${where_study_is_on_my_system}:${where_study_must_be_in_container}"
+			
+			# Bind gradient coefficients files directory
+			# Needs to show up as the /export/HCP/gradient_coefficient_files directory in the Container/Sandbox
+			where_gc_files_are_on_my_system="${g_gradient_coeffs_dir}"
+			where_gc_files_must_be_in_container="/export/HCP/gradient_coefficient_files"
+			
+			run_cmd+=" -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container}"
+			
+			# Bind folder with FreeSurfer License
+			# Needs to show up as the /export/freesurfer_license directory in the Container/Sandbox
+			# Must contain a file named 'license.txt'
+			where_license_file_is_on_my_system="${g_freesurfer_license_dir}"
+			where_license_file_must_be_in_container="/export/freesurfer_license"
+			
+			run_cmd+=" -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container}"
+			
+			# Specify command or script to run
+			if [ "${g_run_type}" = "CONTAINER" ]; then
+				# application in the container to run
+				run_cmd+=" --app StructuralPreprocessing"
+				# container image file
+				run_cmd+=" HCPprocessPipelines.simg"
+			elif [ "${g_run_type}" = "SANDBOX" ]; then
+				# sandbox directory 
+				run_cmd+=" HCPprocessPipelinesSandbox/"
+				# full path to script within sandbox to execute
+				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+			else
+				echo ""
+				echo "ERROR: Unrecognized run type: ${g_run_type}"
+				echo ""
+				exit 1
+			fi
+			
+			# Add command line parameters for command/script to run
+			run_cmd+=" --working-dir=/study" # Note: this path is from within the container
+			run_cmd+=" --subject=${subject_id}"
+			run_cmd+=" --classifier=V1_MR"
+			run_cmd+=" --brainsize=150"
+			
+			run_cmd+=" --first-t1w-directory-name=T1w_MPR_vNav_4e_RMS"
+			run_cmd+=" --first-t1w-file-name=${subject_id}_V1_MR_T1w_MPR_vNav_4e_RMS.nii.gz"
+			
+			run_cmd+=" --first-t2w-directory-name=T2w_SPC_vNav"
+			run_cmd+=" --first-t2w-file-name=${subject_id}_V1_MR_T2w_SPC_vNav.nii.gz"
+			
+			run_cmd+=" --t1template=MNI152_T1_0.8mm.nii.gz"
+			run_cmd+=" --t1templatebrain=MNI152_T1_0.8mm_brain.nii.gz"
+			run_cmd+=" --t1template2mm=MNI152_T1_2mm.nii.gz"
+			
+			run_cmd+=" --t2template=MNI152_T2_0.8mm.nii.gz"
+			run_cmd+=" --t2templatebrain=MNI152_T2_0.8mm_brain.nii.gz"
+			run_cmd+=" --t2template2mm=MNI152_T2_2mm.nii.gz"
+			
+			run_cmd+=" --templatemask=MNI152_T1_0.8mm_brain_mask.nii.gz"
+			run_cmd+=" --template2mmmask=MNI152_T1_2mm_brain_mask_dil.nii.gz"
+			
+			run_cmd+=" --fnirtconfig=T1_2_MNI152_2mm.cnf"
+			run_cmd+=" --gdcoeffs=Prisma_3T_coeff_AS82.grad"
+			run_cmd+=" --topupconfig=b02b0.cnf"
+			
+			run_cmd+=" --fieldmap-type=SpinEcho"
+			run_cmd+=" --se-phase-pos=${pos_fieldmap}"
+			run_cmd+=" --se-phase-neg=${neg_fieldmap}"
+			
+			echo "run_cmd: ${run_cmd}"
+			
+			time ${run_cmd}
+
+		elif [ "${g_app}" = "CHECK" ]; then
+
+			echo ""
+			echo "-- Checking completeness for subject: ${subject_id}:${pos_fieldmap}:${neg_fieldmap} --"
+			echo ""
+			
+			run_cmd=""
+			
+			# Base Singularity command
+			if [ "${g_run_type}" = "CONTAINER" ]; then
+				run_cmd+="singularity run"
+			elif [ "${g_run_type}" = "SANDBOX" ]; then
+				run_cmd+="sudo singularity exec"
+			else
+				echo ""
+				echo "ERROR: Unrecognized run type: ${g_run_type}"
+				echo ""
+				exit 1
+			fi
+			
+			# Bind your data directory
+			# Needs to show up as the /data directory in the Container/Sandbox
+			where_study_is_on_my_system="${g_study_dir}"
+			where_study_must_be_in_container="/study"
+			
+			run_cmd+=" -B ${where_study_is_on_my_system}:${where_study_must_be_in_container}"
+			
+			# Specify command or script to run
+			if [ "${g_run_type}" = "CONTAINER" ]; then
+				# application in the container to run
+				run_cmd+=" --app StructuralPreprocessingCheckData"
+				# container image file
+				run_cmd+=" HCPprocessPipelines.simg"
+			elif [ "${g_run_type}" = "SANDBOX" ]; then
+				# sandbox directory 
+				run_cmd+=" HCPprocessPipelinesSandbox/"
+				# full path to script within sandbox to execute
+				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.CHECK"
+			else
+				echo ""
+				echo "ERROR: Unrecognized run type: ${g_run_type}"
+				echo ""
+				exit 1
+			fi
+			
+			# Add command line parameters for command/script to run
+			run_cmd+=" --working-dir=/study"
+			run_cmd+=" --subject=${subject_id}"
+			run_cmd+=" --classifier=V1_MR"
+			
+			echo "run_cmd: ${run_cmd}"
+			
+			time ${run_cmd}
+			
 		else
-			echo "ERROR: Unrecognized run type: ${g_run_type}"
-			exit 1
-		fi
-		
-		# Bind your data directory
-		# Needs to show up as the /data directory in the Container/Sandbox
-		where_data_are_on_my_system="${HOME}/data"
-		where_data_must_be_in_container="/data"
-		
-		run_cmd+=" -B ${where_data_are_on_my_system}:${where_data_must_be_in_container}"
-		
-		# Bind gradient coefficients files directory
-		# Needs to show up as the /export/HCP/gradient_coefficient_files directory in the Container/Sandbox
-		where_gc_files_are_on_my_system="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
-		where_gc_files_must_be_in_container="/export/HCP/gradient_coefficient_files"
-		
-		run_cmd+=" -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container}"
-		
-		# Bind folder with FreeSurfer License
-		# Needs to show up as the /export/freesurfer_license directory in the Container/Sandbox
-		# Must contain a file named 'license.txt'
-		where_license_file_is_on_my_system="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
-		where_license_file_must_be_in_container="/export/freesurfer_license"
-		
-		run_cmd+=" -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container}"
-		
-		# Specify command or script to run
-		if [ "${g_run_type}" = "CONTAINER" ]; then
-			# application in the container to run
-			run_cmd+=" --app StructuralPreprocessing"
-			# container image file
-			run_cmd+=" HCPprocessPipelines.simg"
-		elif [ "${g_run_type}" = "SANDBOX" ]; then
-			# sandbox directory 
-			run_cmd+=" HCPprocessPipelinesSandbox/"
-			# full path to script within sandbox to execute
-			run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
-		else
-			echo "ERROR: Unrecognized run type: ${g_run_type}"
-			exit 1
-		fi
-		
-		# Add command line parameters for command/script to run
-		run_cmd+=" --working-dir=/data/mystudy" # Note: this path is from within the container
-		run_cmd+=" --subject=${subject_id}"
-		run_cmd+=" --classifier=V1_MR"
-		run_cmd+=" --brainsize=150"
-		
-		run_cmd+=" --first-t1w-directory-name=T1w_MPR_vNav_4e_RMS"
-		run_cmd+=" --first-t1w-file-name=${subject_id}_V1_MR_T1w_MPR_vNav_4e_RMS.nii.gz"
-		
-		run_cmd+=" --first-t2w-directory-name=T2w_SPC_vNav"
-		run_cmd+=" --first-t2w-file-name=${subject_id}_V1_MR_T2w_SPC_vNav.nii.gz"
-		
-		run_cmd+=" --t1template=MNI152_T1_0.8mm.nii.gz"
-		run_cmd+=" --t1templatebrain=MNI152_T1_0.8mm_brain.nii.gz"
-		run_cmd+=" --t1template2mm=MNI152_T1_2mm.nii.gz"
-		
-		run_cmd+=" --t2template=MNI152_T2_0.8mm.nii.gz"
-		run_cmd+=" --t2templatebrain=MNI152_T2_0.8mm_brain.nii.gz"
-		run_cmd+=" --t2template2mm=MNI152_T2_2mm.nii.gz"
-		
-		run_cmd+=" --templatemask=MNI152_T1_0.8mm_brain_mask.nii.gz"
-		run_cmd+=" --template2mmmask=MNI152_T1_2mm_brain_mask_dil.nii.gz"
-		
-		run_cmd+=" --fnirtconfig=T1_2_MNI152_2mm.cnf"
-		run_cmd+=" --gdcoeffs=Prisma_3T_coeff_AS82.grad"
-		run_cmd+=" --topupconfig=b02b0.cnf"
-		
-		run_cmd+=" --fieldmap-type=SpinEcho"
-		run_cmd+=" --se-phase-pos=${pos_fieldmap}"
-		run_cmd+=" --se-phase-neg=${neg_fieldmap}"
-		
-		echo "run_cmd: ${run_cmd}"
 
-		time ${run_cmd}
-
+			echo ""
+			echo "ERROR: Unrecognized app: ${g_app}"
+			echo ""
+			exit 1
+			
+		fi
+			
 	done < "${g_subject_list_file}"
 }
 
