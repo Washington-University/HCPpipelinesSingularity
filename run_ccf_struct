@@ -12,13 +12,13 @@ usage()
 
 ${SCRIPT_NAME}: 
 
-  This utility script demonstrates how to run Structural Preprocessing related
-  applications available within the HCPprocessPipelines.simg Singularity container 
-  or within the corresponding HCPprocessPipelinesSandbox on CCF subjects.
+  This script demonstrates how to run Structural Preprocessing related applications 
+  available within the HCPprocessPipelines.simg Singularity container or within the
+  corresponding HCPprocessPipelinesSandbox on CCF subjects.
 
-Usage: ${SCRIPT_NAME}: PARAMETER ...
+Usage: ${SCRIPT_NAME} PARAMETER ...
 
-PARAMETERS are: [ ] = optional; < > = user supplied value
+PARAMETERs are: [ ] = optional; < > = user supplied value
 
   [--help] : show this usage information and exit
 
@@ -77,8 +77,8 @@ PARAMETERS are: [ ] = optional; < > = user supplied value
     check, you can allow this to take its default value even if that
     value is incorrect.  
 
-  Specification of run type
-  -------------------------
+  Specification of environment
+  ----------------------------
 
     You must specify whether to perform the requested processing
     in the Singularity Container (HCPprocessPipelines.simg) or 
@@ -86,18 +86,18 @@ PARAMETERS are: [ ] = optional; < > = user supplied value
 
     One of the following options must be specified:
 
-      --run-type=[CONTAINER|SANDBOX]
+      --env=[CONTAINER|SANDBOX]
       --container
       --sandbox
 
-    The value specified for the --run-type= parameter is not case
+    The value specified for the --env= parameter is not case
     sensitive, but must be either CONTAINER or SANDBOX. For example, 
-    --run-type=ConTAiner, --run-type=SandBox, and --run-type=sandbox
-    are all valid, but --run-type=CONTAIN is not valid.
+    --env=ConTAiner, --env=SandBox, and --env=sandbox
+    are all valid, but --env=CONTAIN is not valid.
 
-      --container is equivalent to --run-type=CONTAINER
+      --container is equivalent to --env=CONTAINER
 
-      --sandbox is equivalent to --run-type=SANDBOX
+      --sandbox is equivalent to --env=SANDBOX
 
     NOTE: To run within the Sandbox, you will need sudo privileges
     on the machine on which you are running. When commands are run
@@ -122,34 +122,47 @@ PARAMETERS are: [ ] = optional; < > = user supplied value
   Processing
   ----------
 
-    This script can run the actual Structural Preprocessing for the specified 
-    subjects or can run the completion check for Structural Preprocessing for
-    the specified subjects.
+    This script can:
 
-    You can specify which type of processing using one of the following options:
+      1. run the actual Structural Preprocessing for the specified subjects 
+      2. run the completion check for Structural Preprocessing for the specified subjects.
+      3. show the help provided by the container for Structural Preprocessing
 
-      --app=[PROCESS|CHECK]
+    You specify which type of processing to perform using one of the following options:
+
+      --app=[PROCESS|CHECK|PROCESSHELP]
       --process
       --check
+      --process-help
 
     The value specified for the --app= parameter is not case sensitive, but must be
-    either PROCESS or CHECK. For example, --app=Process, --app=PROCess, and 
+    PROCESS, CHECK, or PROCESSHELP. For example, --app=Process, --app=PROCess, and 
     --app=ChecK are all valid, but --app=PRO is not valid.
 
       --process is equivalent to --app=PROCESS
-      
       --check is equivalent to --app=CHECK
+      --process-help is equivalent to --app=PROCESSHELP
 
-    PROCESS means to run the actual Structural Preprocessing using the specified
-    subject information. CHECK means to run the Structural Preprocessing completion
-    check using the specified subject information.
-
-    If no --app= option or --process or --check is specified, this script 
-    defaults to --app=${DEFAULT_APP}.
+    If no --app= option or --process, --check, or --process-help option is specified, 
+    this script defaults to --app=${DEFAULT_APP}.
 
 EOF
 }
-	
+
+abort()
+{
+	local error_msg
+	error_msg="${1}"
+
+	echo ""
+	usage
+	echo "--------------------------------------------------"
+	echo "ERROR: ${error_msg}"
+	echo "--------------------------------------------------"
+	echo ""
+	exit 1
+}
+
 get_options()
 {
 	local arguments=($@)
@@ -159,7 +172,7 @@ get_options()
 	g_study_dir="${DEFAULT_STUDY_DIR}"
 	g_gradient_coeffs_dir="${DEFAULT_GRADIENT_COEFFS_DIR}"
 	g_freesurfer_license_dir="${DEFAULT_FREESURFER_LICENSE_DIR}"
-	unset g_run_type
+	unset g_env
 	g_app="${DEFAULT_APP}"
 			
 	# parse arguments
@@ -187,17 +200,17 @@ get_options()
 				g_freesurfer_license_dir=${argument/*=/""}
 				index=$(( index + 1 ))
 				;;
-			--run-type=*)
-				g_run_type=${argument/*=/""}
-				g_run_type=$(echo ${g_run_type} | tr '[:lower:]' '[:upper:]')
+			--env=*)
+				g_env=${argument/*=/""}
+				g_env=$(echo ${g_env} | tr '[:lower:]' '[:upper:]')
 				index=$(( index + 1 ))
 				;;
 			--container)
-				g_run_type="CONTAINER"
+				g_env="CONTAINER"
 				index=$(( index + 1 ))
 				;;
 			--sandbox)
-				g_run_type="SANDBOX"
+				g_env="SANDBOX"
 				index=$(( index + 1 ))
 				;;
 			--subject-list=*)
@@ -217,6 +230,10 @@ get_options()
 				g_app="CHECK"
 				index=$(( index + 1 ))
 				;;
+			--process-help)
+				g_app="PROCESSHELP"
+				index=$(( index + 1 ))
+				;;
 			*)
 				echo "Unrecognized option: ${argument}"
 				exit 1
@@ -229,68 +246,46 @@ get_options()
 
 	if [ -n "${g_study_dir}" ]; then
 		echo "INFO: study directory: ${g_study_dir}"
-	else	
-		echo ""
-		echo "ERROR: --study-dir=<study-directory> must be specified"
-		echo ""
-		exit 1
+	else
+		abort "--study-dir=<study-directory> must be specified"
 	fi
 
 	if [ -n "${g_gradient_coeffs_dir}" ]; then
 		echo "INFO: gradient coefficients directory: ${g_gradient_coeffs_dir}"
 	else
-		echo ""
-		echo "ERROR: --gradient-coeffs-dir=<gradient-coeffs-directory> must be specified"
-		echo ""
-		exit 1
+		abort "--gradient-coeffs-dir=<gradient-coeffs-directory> must be specified"
 	fi
 
 	if [ -n "${g_freesurfer_license_dir}" ]; then
 		echo "INFO: FreeSurfer license directory: ${g_freesurfer_license_dir}"
 	else
-		echo ""
-		echo "ERROR: --freesurfer-license-dir=<freesurfer-license-directory> must be specified"
-		echo ""
-		exit 1
+		abort "--freesurfer-license-dir=<freesurfer-license-directory> must be specified"
 	fi
 	
-	if [ -z "${g_run_type}" ]; then
-		echo ""
-		echo "ERROR: run type (--run-type=[CONTAINER|SANDBOX], --container, or --sandbox) required"
-		echo ""
-		exit 1
+	if [ -z "${g_env}" ]; then
+		abort "environment (--env=[CONTAINER|SANDBOX], --container, or --sandbox) required"
 	fi
 
-	if [ "${g_run_type}" != "CONTAINER" -a "${g_run_type}" != "SANDBOX" ]; then 
-		echo ""
-		echo "ERROR: run type must be CONTAINER or SANDBOX"
-		echo ""
-		exit 1
+	if [ "${g_env}" != "CONTAINER" -a "${g_env}" != "SANDBOX" ]; then 
+		abort "environment must be CONTAINER or SANDBOX"
 	else
-		echo "INFO: Run Type: ${g_run_type}"
+		echo "INFO: Environment: ${g_env}"
+	fi
+
+	if [ -z "${g_app}" ]; then
+		abort "app to run (--run-type=[PROCESS|CHECK|PROCESSHELP], --process, --check, or --process-help) required"
+	fi
+
+	if [ "${g_app}" != "PROCESS" -a "${g_app}" != "CHECK" -a "${g_app}" != "PROCESSHELP" ]; then 
+		abort "app to run must be PROCESS or CHECK"
 	fi
 
 	if [ -n "${g_subject_list_file}" ]; then
 		echo "INFO: running processing for subjects listed in file: ${g_subject_list_file}"
 	else
-		echo ""
-		echo "ERROR: --subject-list=<subject-list-filename> must be specified"
-		echo ""
-		exit 1
-	fi
-
-	if [ -z "${g_app}" ]; then
-		echo ""
-		echo "ERROR: app to run (--run-type=[PROCESS|CHECK], --process, or --check) required"
-		echo ""
-		exit 1
-	fi
-
-	if [ "${g_app}" != "PROCESS" -a "${g_app}" != "CHECK" ]; then 
-		echo ""
-		echo "ERROR: app to run must be PROCESS or CHECK"
-		echo ""
-		exit 1
+		if [ "${g_app}" != "PROCESSHELP" ]; then
+			abort "--subject-list=<subject-list-filename> must be specified"
+		fi
 	fi
 }
 
@@ -309,6 +304,29 @@ main()
 	local where_license_file_must_be_in_container
 		
 	get_options "$@"
+
+
+	if [ "${g_app}" = "PROCESSHELP" ]; then
+
+		run_cmd=""
+		
+		if [ "${g_env}" = "CONTAINER" ]; then
+			run_cmd+="singularity run --app StructuralPreprocessing HCPprocessPipelines.simg"
+		elif [ "${g_env}" = "SANDBOX" ]; then
+			run_cmd+="sudo singularity exec HCPprocessPipelinesSandbox/ /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+		else
+			abort "Unrecognized environment: ${g_env}"
+		fi
+
+		run_cmd+=" --help"
+
+		echo "run_cmd: ${run_cmd}"
+
+		time ${run_cmd}
+
+		exit
+	fi
+
 	
 	while read -r line; do
 
@@ -341,19 +359,16 @@ main()
 			run_cmd=""
 			
 			# Base Singularity command
-			if [ "${g_run_type}" = "CONTAINER" ]; then
+			if [ "${g_env}" = "CONTAINER" ]; then
 				run_cmd+="singularity run"
-			elif [ "${g_run_type}" = "SANDBOX" ]; then
+			elif [ "${g_env}" = "SANDBOX" ]; then
 				run_cmd+="sudo singularity exec"
 			else
-				echo ""
-				echo "ERROR: Unrecognized run type: ${g_run_type}"
-				echo ""
-				exit 1
+				abort "Unrecognized environment: ${g_env}"
 			fi
 			
 			# Bind your study directory
-			# Needs to show up as the /data directory in the Container/Sandbox
+			# Needs to show up as the /study directory in the Container/Sandbox
 			where_study_is_on_my_system="${g_study_dir}"
 			where_study_must_be_in_container="/study"
 			
@@ -375,21 +390,18 @@ main()
 			run_cmd+=" -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container}"
 			
 			# Specify command or script to run
-			if [ "${g_run_type}" = "CONTAINER" ]; then
+			if [ "${g_env}" = "CONTAINER" ]; then
 				# application in the container to run
 				run_cmd+=" --app StructuralPreprocessing"
 				# container image file
 				run_cmd+=" HCPprocessPipelines.simg"
-			elif [ "${g_run_type}" = "SANDBOX" ]; then
+			elif [ "${g_env}" = "SANDBOX" ]; then
 				# sandbox directory 
 				run_cmd+=" HCPprocessPipelinesSandbox/"
 				# full path to script within sandbox to execute
 				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
 			else
-				echo ""
-				echo "ERROR: Unrecognized run type: ${g_run_type}"
-				echo ""
-				exit 1
+				abort "Unrecognized environment: ${g_env}"
 			fi
 			
 			# Add command line parameters for command/script to run
@@ -436,15 +448,12 @@ main()
 			run_cmd=""
 			
 			# Base Singularity command
-			if [ "${g_run_type}" = "CONTAINER" ]; then
-				run_cmd+="singularity run"
-			elif [ "${g_run_type}" = "SANDBOX" ]; then
+			if [ "${g_env}" = "CONTAINER" ]; then
+				run_cmd+="sudo singularity run"
+			elif [ "${g_env}" = "SANDBOX" ]; then
 				run_cmd+="sudo singularity exec"
 			else
-				echo ""
-				echo "ERROR: Unrecognized run type: ${g_run_type}"
-				echo ""
-				exit 1
+				abort "Unrecognized environment: ${g_env}"
 			fi
 			
 			# Bind your data directory
@@ -455,21 +464,18 @@ main()
 			run_cmd+=" -B ${where_study_is_on_my_system}:${where_study_must_be_in_container}"
 			
 			# Specify command or script to run
-			if [ "${g_run_type}" = "CONTAINER" ]; then
+			if [ "${g_env}" = "CONTAINER" ]; then
 				# application in the container to run
 				run_cmd+=" --app StructuralPreprocessingCheckData"
 				# container image file
 				run_cmd+=" HCPprocessPipelines.simg"
-			elif [ "${g_run_type}" = "SANDBOX" ]; then
+			elif [ "${g_env}" = "SANDBOX" ]; then
 				# sandbox directory 
 				run_cmd+=" HCPprocessPipelinesSandbox/"
 				# full path to script within sandbox to execute
 				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.CHECK"
 			else
-				echo ""
-				echo "ERROR: Unrecognized run type: ${g_run_type}"
-				echo ""
-				exit 1
+				abort "Unrecognized environment: ${g_env}"
 			fi
 			
 			# Add command line parameters for command/script to run
@@ -483,10 +489,7 @@ main()
 			
 		else
 
-			echo ""
-			echo "ERROR: Unrecognized app: ${g_app}"
-			echo ""
-			exit 1
+			abort "Unrecognized app: ${g_app}"
 			
 		fi
 			
