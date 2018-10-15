@@ -32,8 +32,8 @@ From: centos:7.5.1804
 	mkdir -p /export/freesurfer_license
 	cd /pipeline_tools
 	
-	####	hcp_pipelines_run_utils v1.0.0
-	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.0.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
+	####	hcp_pipelines_run_utils v1.1.0
+	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.1.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
 	tar xvf hcp_pipelines_run_utils.tar.gz -C /pipeline_tools/HCPpipelinesRunUtils --strip-components=1
 	rm hcp_pipelines_run_utils.tar.gz
 
@@ -120,9 +120,9 @@ From: centos:7.5.1804
 	ln -s /export/matlab/MCR/R2012b/v80 /export/freesurfer-6.0/MCRv80
 
 	####	install workbench
-	wget https://ftp.humanconnectome.org/workbench/workbench-rh_linux64-v1.3.1.zip
-	unzip workbench-rh_linux64-v1.3.1.zip -d /export/HCP/
-	rm workbench-rh_linux64-v1.3.1.zip
+	wget https://ftp.humanconnectome.org/workbench/workbench-rh_linux64-v1.3.2.zip
+	unzip workbench-rh_linux64-v1.3.2.zip -d /export/HCP/
+	rm workbench-rh_linux64-v1.3.2.zip
 	rm -f /export/HCP/workbench/plugins_rh_linux64/plugins.zip
 	
 	####	HCPpipelines
