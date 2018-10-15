@@ -1,0 +1,280 @@
+#!/bin/bash
+
+SCRIPT_NAME=$(basename "${0}")
+DEFAULT_BUILD_SOURCE="RECIPE"
+
+usage()
+{
+	cat <<EOF
+
+${SCRIPT_NAME}:
+
+  This script builds either the Singularity CONTAINER image (HCPprocessPipelines.simg) or 
+  the Singularity SANDBOX directory (HCPprocessPipelinesSandbox).
+
+  The CONTAINER image can be built either from the RECIPE file (HCPprocessPipelines)
+  or from the SANDBOX directory (HCPprocessPipelinesSandbox) if it exists.
+
+  The SANDBOX directory can be built from the RECIPE file (HCPprocessPipelines)
+  or from the CONTAINER image (HCPprocessPipelines.simg) if it exists. 
+
+Usage: ${SCRIPT_NAME} PARAMETER ...
+PARAMETERs are: [ ] = optional; < > = user supplied value
+
+  [--help] : show this usage information and exit
+
+  Build Source
+  ------------
+
+    You can specify the source of the build using one of the following 
+    command line options:
+
+    --source=[SANDBOX|RECIPE|CONTAINER]
+    --from=[SANDBOX|RECIPE|CONTAINER]
+    --from-sandbox   (equivalent to --source=SANDBOX)
+    --from-recipe    (equivalent to --source=RECIPE)
+    --from-container (equivalent to --source=CONTAINER)
+
+    The source defaults to ${DEFAULT_BUILD_SOURCE}
+
+  Build Target
+  ------------
+
+    You must specify the target of the build using one of the following
+    command line options:
+
+    --target=[SANDBOX|CONTAINER]
+    --to=[SANDBOX|CONTAINER]
+    --sandbox   (equivalent to --target=SANDBOX)
+    --container (equivalent to --target=CONTAINER)
+
+  Source and target combinations that do not make sense, such as 
+  building a container from a container, are reported as errors.
+
+  Building from a source that does not exist (e.g. trying to 
+  build a CONTAINER from a SANDBOX when the SANDBOX does not 
+  exist) is reported as an error.
+
+EOF
+}
+
+abort()
+{
+	local error_msg
+	error_msg="${1}"
+
+	echo ""
+	usage
+	echo "--------------------------------------------------"
+	echo "ERROR: ${error_msg}"
+	echo "--------------------------------------------------"
+	echo ""
+	exit 1
+}
+
+get_options()
+{
+	local arguments=($@)
+	
+	# initialize global output variables
+	g_source="${DEFAULT_BUILD_SOURCE}"
+	unset g_target
+	
+	# parse arguments
+	local num_args=${#arguments[@]}
+	local argument
+	local index=0
+
+	while [ ${index} -lt ${num_args} ]; do
+		argument=${arguments[index]}
+
+		case ${argument} in
+			--help)
+				usage
+				exit 1
+				;;
+			--source=*)
+				g_source=${argument/*=/""}
+				g_source=$(echo ${g_source} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--from=*)
+				g_source=${argument/*=/""}
+				g_source=$(echo ${g_source} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--from-sandbox)
+				g_source="SANDBOX"
+				index=$(( index + 1 ))
+				;;
+			--from-recipe)
+				g_source="RECIPE"
+				index=$(( index + 1 ))
+				;;
+			--from-container)
+				g_source="CONTAINER"
+				index=$(( index + 1 ))
+				;;
+			--target=*)
+				g_target=${argument/*=/""}
+				g_target=$(echo ${g_target} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--to=*)
+				g_target=${argument/*=/""}
+				g_target=$(echo ${g_target} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--container)
+				g_target="CONTAINER"
+				index=$(( index + 1 ))
+				;;
+			--sandbox)
+				g_target="SANDBOX"
+				index=$(( index + 1 ))
+				;;
+			*)
+				echo "Unrecognized option: ${argument}"
+				exit 1
+				;;
+		esac
+
+	done
+
+	# check parameters
+
+ 	if [ -z "${g_source}" ]; then
+		abort "source (--source=[RECIPE|SANDBOX|CONTAINER], --to=[RECIPE|SANDBOX|CONTAINER], --from-sandbox, --from-recipe, --from-container) required"
+	fi
+
+	if [ "${g_source}" != "RECIPE" -a "${g_source}" != "SANDBOX" -a "${g_source}" != "CONTAINER" ]; then
+		abort "source must be RECIPE, SANDBOX, or CONTAINER"
+	else
+		echo "INFO: source: ${g_source}"
+	fi
+
+ 	if [ -z "${g_target}" ]; then
+		abort "target (--target=[CONTAINER|SANDBOX], --to=[CONTAINER|SANDBOX], --container, --sandbox) required"
+	fi
+
+	if [ "${g_target}" != "CONTAINER" -a "${g_target}" != "SANDBOX" ]; then
+		abort "target must be CONTAINER or SANDBOX"
+	else
+		echo "INFO: target: ${g_target}"
+	fi
+}
+
+main()
+{
+	get_options "$@"
+
+	if [ "${g_source}" = "RECIPE" ]; then
+
+		if [ -e "HCPprocessPipelines" ]; then
+
+			if [ "${g_target}" = "CONTAINER" ]; then
+
+				# recipe --> container
+				echo "Building: RECIPE --> CONTAINER"
+				
+				if [ -e "HCPprocessPipelines.simg" ]; then
+					rm HCPprocessPipelines.simg
+				fi
+				
+				time sudo singularity build HCPprocessPipelines.simg HCPprocessPipelines
+				
+			elif [ "${g_target}" = "SANDBOX" ]; then
+				
+				# recipe --> sandbox
+				echo "Building: RECIPE --> SANDBOX"
+				
+				if [ -e "HCPprocessPipelinesSandbox" ]; then
+					sudo rm -rf HCPprocessPipelinesSandbox
+				fi
+				
+				time sudo singularity build --sandbox HCPprocessPipelinesSandbox/ HCPprocessPipelines
+				
+			else
+				abort "Unrecognized target: ${g_target}"
+			fi
+
+		else
+
+			abort "Cannot build from RECIPE because it does not exist"
+
+		fi
+			
+	elif [ "${g_source}" = "SANDBOX" ]; then
+
+		if [ -e "HCPprocessPipelinesSandbox" ]; then
+		
+			if [ "${g_target}" = "CONTAINER" ]; then
+
+				# sandbox --> container
+				echo "Building: SANDBOX --> CONTAINER"
+
+				if [ -e "HCPprocessPipelines.simg" ]; then
+					rm HCPprocessPipelines.simg
+				fi
+				
+				time sudo singularity build HCPprocessPipelines.simg HCPprocessPipelinesSandbox/
+			
+			elif [ "${g_target}" = "SANDBOX" ]; then
+				
+				# sandbox --> sandbox
+				abort "Cannot build SANDBOX from SANDBOX"
+
+			else
+				
+				abort "Unrecognized target: ${g_target}"
+
+			fi
+
+		else
+
+			abort "Cannot build from SANDBOX because it does not exist"
+
+		fi
+
+	elif [ "${g_source}" = "CONTAINER" ]; then
+
+		if [ -e "HCPprocessPipelines.simg" ]; then
+
+			if [ "${g_target}" = "CONTAINER" ]; then
+
+				# container --> container
+
+				abort "Cannot build CONTAINER from CONTAINER"
+
+			elif [ "${g_target}" = "SANDBOX" ]; then
+
+				# container --> sandbox
+				echo "Building: CONTAINER --> SANDBOX"
+
+				if [ -e "HCPprocessPipelinesSandbox" ]; then
+					sudo rm -rf HCPprocessPipelinesSandbox
+				fi
+				
+				time sudo singularity build --sandbox HCPprocessPipelinesSandbox/ HCPprocessPipelines.simg
+
+			else
+
+				abort "Unrecognized target: ${g_target}"
+
+			fi
+				
+		else
+			
+			abort "Cannot build from CONTAINER because it does not exist"
+
+		fi
+		
+	else
+
+		abort "Unrecognized source: ${g_source}"
+
+	fi
+}
+
+# Invoke the main function to get things started
+main "$@"

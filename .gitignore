@@ -8,7 +8,7 @@
 *.*~
 
 # Ignore generated Singularity image files
-*.img
+*.simg
 
 # Ignore generated Singularity Sandboxes
 *Sandbox

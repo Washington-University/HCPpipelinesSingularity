@@ -1,0 +1,246 @@
+#!/bin/bash
+
+SCRIPT_NAME=$(basename "${0}")
+DEFAULT_STUDY_DIR="${HOME}/data/mystudy"
+DEFAULT_GRADIENT_COEFFS_DIR="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
+DEFAULT_FREESURFER_LICENSE_DIR="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
+
+usage()
+{
+	cat <<EOF
+
+${SCRIPT_NAME}:
+
+  This script demonstrates how to "enter" the HCPprocessPipelines.simg CONTAINER or
+  HCPprocessPipelinesSandbox SANDBOX for verifying configuration and testing.
+
+Usage: ${SCRIPT_NAME} PARAMETER ...
+
+PARAMETERs are: [ ] = optional; < > = user supplied value
+
+  [--help] : show this usage information and exit
+
+  Path to study directory
+  -----------------------
+
+  [--study-dir=<path-to-study-directory>]
+
+    The specified path will be bound (i.e. mounted) from your system
+    to a known location (/study) in the container or sandbox. This is 
+    where the study data must be found within the container or sandbox.
+
+    It is assumed that your study directory contains subdirectories that 
+    correspond to your subject IDs.
+
+    If you do not specify a study directory, the study directory will 
+    default to: ${DEFAULT_STUDY_DIR}.
+
+  Path to gradient coefficients files
+  -----------------------------------
+
+  [--gradient-coeffs-dir=<path-to-gradient-coefficients-directory>]
+
+    The specified path will be bound (i.e. mounted) from your system
+    to a known location (/export/HCP/gradient_coefficient_files) in the
+    container or sandbox. This is where the gradient coefficients
+    files must be found within the container or sandbox.
+
+    This gradient coefficients files directory must contain the
+    proprietary gradient coefficients files for any scanners used in 
+    collecting your image data files.
+
+    If you do not specify a gradient coefficients files directory, it will
+    default to: ${DEFAULT_GRADIENT_COEFFS_DIR}.  
+
+    NOTE: The path to the gradient coefficients files is only necessary
+    for actual processing of data. If you are running a completion
+    check, you can allow this to take its default value even if that
+    value is incorrect.  
+
+  Path to FreeSurfer license file
+  -------------------------------
+
+  [--freesurfer-license-dir=<path-to-freesurfer-license-directory>]
+
+    The specified path will be bound (i.e. mounted) from your system
+    to a known location (/export/freesurfer_license) in the container
+    or sandbox. This is where the FreeSurfer license file must be
+    found within the container or sandbox.
+
+    If you do not specify a FreeSurfer license directory, it will 
+    default to: ${DEFAULT_FREESURFER_LICENSE_DIR}.
+
+  Specification of environment
+  ----------------------------
+
+    You must specify whether to enter the Singularity Container 
+    (HCPprocessPipelines.simg) or the Singularity Sandbox 
+    (HCPprocessPipelinesSandbox/).
+
+    One of the following options must be specified:
+
+      --env=[CONTAINER|SANDBOX]
+      --container
+      --sandbox
+
+    The value specified for the --env= parameter is not case
+    sensitive, but must be either CONTAINER or SANDBOX. For example, 
+    --env=ConTAiner, --env=SandBox, and --env=sandbox
+    are all valid, but --env=CONTAIN is not valid.
+
+      --container is equivalent to --env=CONTAINER
+
+      --sandbox is equivalent to --env=SANDBOX
+
+EOF
+}
+
+abort()
+{
+	local error_msg
+	error_msg="${1}"
+
+	echo ""
+	usage
+	echo "--------------------------------------------------"
+	echo "ERROR: ${error_msg}"
+	echo "--------------------------------------------------"
+	echo ""
+	exit 1
+}
+
+get_options()
+{
+	local arguments=($@)
+	
+	# initialize global output variables
+	g_study_dir="${DEFAULT_STUDY_DIR}"
+	g_gradient_coeffs_dir="${DEFAULT_GRADIENT_COEFFS_DIR}"
+	g_freesurfer_license_dir="${DEFAULT_FREESURFER_LICENSE_DIR}"
+	unset g_env
+			
+	# parse arguments
+	local num_args=${#arguments[@]}
+	local argument
+	local index=0
+
+	while [ ${index} -lt ${num_args} ]; do
+		argument=${arguments[index]}
+
+		case ${argument} in
+			--help)
+				usage
+				exit 1
+				;;
+			--study-dir=*)
+				g_study_dir=${argument/*=/""}
+				index=$(( index + 1 ))
+				;;
+			--gradient-coeffs_dir=*)
+				g_gradient_coeffs_dir=${argument/*=/""}
+				index=$(( index + 1 ))
+				;;
+			--freesurfer-license-dir=*)
+				g_freesurfer_license_dir=${argument/*=/""}
+				index=$(( index + 1 ))
+				;;
+			--env=*)
+				g_env=${argument/*=/""}
+				g_env=$(echo ${g_env} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--container)
+				g_env="CONTAINER"
+				index=$(( index + 1 ))
+				;;
+			--sandbox)
+				g_env="SANDBOX"
+				index=$(( index + 1 ))
+				;;
+			*)
+				abort "Unrecognized option: ${argument}"
+				;;
+		esac
+
+	done
+
+	# check parameters
+
+	if [ -n "${g_study_dir}" ]; then
+		echo "INFO: study directory: ${g_study_dir}"
+	else
+		abort "--study-dir=<study-directory> must be specified"
+	fi
+
+	if [ -n "${g_gradient_coeffs_dir}" ]; then
+		echo "INFO: gradient coefficients directory: ${g_gradient_coeffs_dir}"
+	else
+		abort "--gradient-coeffs-dir=<gradient-coeffs-directory> must be specified"
+	fi
+
+	if [ -n "${g_freesurfer_license_dir}" ]; then
+		echo "INFO: FreeSurfer license directory: ${g_freesurfer_license_dir}"
+	else
+		abort "--freesurfer-license-dir=<freesurfer-license-directory> must be specified"
+	fi
+	
+	if [ -z "${g_env}" ]; then
+		abort "environment (--env=[CONTAINER|SANDBOX], --container, or --sandbox) required"
+	fi
+
+	if [ "${g_env}" != "CONTAINER" -a "${g_env}" != "SANDBOX" ]; then 
+		abort "environment must be CONTAINER or SANDBOX"
+	else
+		echo "INFO: Environment: ${g_env}"
+	fi
+}
+
+main()
+{
+	local where_study_is_on_my_system
+	local where_study_must_be_in_container
+
+	local where_gc_files_are_on_my_system
+	local where_gc_files_must_be_in_container
+
+	local where_license_file_is_on_my_system
+	local where_license_file_must_be_in_container
+
+	get_options "$@"
+
+	where_study_is_on_my_system="${g_study_dir}"
+	where_study_must_be_in_container="/study"
+	
+	where_gc_files_are_on_my_system="${g_gradient_coeffs_dir}"
+	where_gc_files_must_be_in_container="/export/HCP/gradient_coefficient_files"
+
+	where_license_file_is_on_my_system="${g_freesurfer_license_dir}"
+	where_license_file_must_be_in_container="/export/freesurfer_license"
+
+	shell_cmd=""
+	
+	if [ "${g_env}" = "CONTAINER" ]; then
+
+		sudo singularity shell \
+			 -B ${where_study_is_on_my_system}:${where_study_must_be_in_container} \
+			 -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container} \
+			 -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container} \
+			 HCPprocessPipelines.simg
+
+	elif [ "${g_env}" = "SANDBOX" ]; then
+
+		sudo singularity shell \
+			 -B ${where_study_is_on_my_system}:${where_study_must_be_in_container} \
+			 -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container} \
+			 -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container} \
+			 HCPprocessPipelinesSandbox
+
+	else
+
+		abort "Unrecognized environment: ${g_env}"
+		
+	fi
+}
+
+# Invoke the main function to get things started
+main "$@"
