@@ -32,8 +32,9 @@ From: centos:7.5.1804
 	mkdir -p /export/freesurfer_license
 	cd /pipeline_tools
 	
-	####	hcp_pipelines_run_utils v1.1.0
-	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.1.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
+	####	hcp_pipelines_run_utils v1.1.0	################# NEEDS to CHANGE the REPOSITORY !!!!!!!!!!!!!!!
+	#wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.1.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
+	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/master.tar.gz -O hcp_pipelines_run_utils.tar.gz
 	tar xvf hcp_pipelines_run_utils.tar.gz -C /pipeline_tools/HCPpipelinesRunUtils --strip-components=1
 	rm hcp_pipelines_run_utils.tar.gz
 
@@ -51,21 +52,22 @@ From: centos:7.5.1804
 	####	install freesurfer-6.0
 	wget ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.0/freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz
 	mkdir -p /export/freesurfer-6.0
-	tar -C /export/freesurfer-6.0 -xzvf freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz --strip-components=1
+	tar -C /export/freesurfer-6.0 -xzvf freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz --strip-components=1 \
+		--exclude='freesurfer/trctrain' \
+		--exclude='freesurfer/average/SVIP*' \
+		--exclude='freesurfer/average/*/*' \
+		--exclude='freesurfer/lib/qt' \
+		--exclude='freesurfer/subjects/bert' \
+		--exclude='freesurfer/subjects/cvs_avg35*' \
+		--exclude='freesurfer/subjects/sample-00*' \
+		--exclude='freesurfer/subjects/fsaverage?' \
+		--exclude='freesurfer/subjects/fsaverage_sym' \
+		--exclude='freesurfer/docs/*/*' \
+		--exclude='freesurfer/fsfast/docs/*' \
+		--exclude='freesurfer/mni/mni.srcbuild.June2015.tgz' \
+		--exclude='freesurfer/bin/*test*' \
+		--exclude='freesurfer/bin/*Test*'
 	rm freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz
-	rm -rf /export/freesurfer-6.0/trctrain/*
-	rm -rf /export/freesurfer-6.0/average/*/
-	rm -f /export/freesurfer-6.0/average/SVIP*
-	rm -rf /export/freesurfer-6.0/subjects/bert
-	rm -rf /export/freesurfer-6.0/subjects/cvs_avg35*
-	rm -f /export/freesurfer-6.0/subjects/sample-00*
-	rm -rf /export/freesurfer-6.0/subjects/fsaverage{3..6}
-	rm -rf /export/freesurfer-6.0/subjects/fsaverage_sym
-	rm -rf /export/freesurfer-6.0/docs/*/
-	rm -f /export/freesurfer-6.0/fsfast/docs/*
-	rm -f /export/freesurfer-6.0/mni/mni.srcbuild.June2015.tgz
-	rm -f /export/freesurfer-6.0/bin/*test*
-	rm -f /export/freesurfer-6.0/bin/*Test*
 
 	####	install epd-7.3.2
 	wget https://www.clear.rice.edu/comp140/downloads/epd/linux/epd-7.3-2-rh5-x86_64.sh
@@ -80,6 +82,9 @@ From: centos:7.5.1804
 	yum install -y python2-pip.noarch
 	pip2 install numpy
 	pip2 install nibabel==2.3.0 --install-option="--prefix=/export/HCP/epd-7.3.2"
+	
+	yum clean packages
+	rm -rf /var/cache/yum/* 
 	
 	#### 	gradunwarp v1.1.0
 	wget https://github.com/Washington-University/gradunwarp/archive/v1.1.0.tar.gz -O gradunwarp.tar.gz
@@ -105,10 +110,8 @@ From: centos:7.5.1804
 	
 	####	install MSM_HOCR_v2
 	wget https://www.doc.ic.ac.uk/~ecr05/MSM_HOCR_v2/MSM_HOCR_v2-download.tgz
-	tar -xvzf MSM_HOCR_v2-download.tgz --strip-components=2 -C /export/HCP
+	tar -xvzf MSM_HOCR_v2-download.tgz --strip-components=2 -C /export/HCP --exclude='MSM_HOCR_v2/MacOSX' --exclude='MSM_HOCR_v2/Ubuntu'
 	rm MSM_HOCR_v2-download.tgz
-	rm -rf /export/HCP/MSM_HOCR_v2/MacOSX
-	rm -rf /export/HCP/MSM_HOCR_v2/Ubuntu
 	
 	####	install MCR/R2012b/v80
 	wget http://ssd.mathworks.com/supportfiles/MCR_Runtime/R2012b/MCR_R2012b_glnxa64_installer.zip
@@ -251,7 +254,7 @@ From: centos:7.5.1804
 		--scan=<scan>			 : scan within subject (e.g. tfMRI_CARIT_PA, rfMRI_REST1_AP, etc)   
 		--classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		--dcmethod=<dcmethod>   	 : (e.g. TOPUP)  
-		--topupconfig=<topupconfig>      : (e.g. b02b0.cnf)
+		--topupconfig=<topupconfig>  : (e.g. b02b0.cnf)
 		--gdcoeffs=<gdcoeffs>		 : (e.g. Prisma_3T_coeff_AS82.grad)
 		--working-dir=<dir>	    	 : Working directory in which to place retrieved data and in which to produce results 
 	
@@ -266,3 +269,4 @@ From: centos:7.5.1804
 		--classifier=<classifier>: session classifier (e.g. 3T, 7T, MR, V1, V1_MR, etc.)   
 		--scan=<scan>			 : scan within subject (e.g. tfMRI_CARIT_PA, rfMRI_REST1_AP, etc)   
 		--working-dir=<dir> 	 : Working directory in which to place retrieved data and in which to produce results 
+		
