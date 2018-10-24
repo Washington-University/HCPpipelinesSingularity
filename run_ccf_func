@@ -3,7 +3,7 @@
 SCRIPT_NAME=$(basename "${0}")
 DEFAULT_STUDY_DIR="${HOME}/data/mystudy"
 DEFAULT_GRADIENT_COEFFS_DIR="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
-DEFAULT_FREESURFER_LICENSE_DIR="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
+#DEFAULT_FREESURFER_LICENSE_DIR="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
 DEFAULT_APP="PROCESS"
 DEFAULT_ENV="CONTAINER"
 
@@ -13,7 +13,7 @@ usage()
 
 ${SCRIPT_NAME}: 
 
-  This script demonstrates how to run Structural Preprocessing related applications 
+  This script demonstrates how to run Functional Preprocessing related applications 
   available within the HCPprocessPipelines.simg Singularity container or within the
   corresponding HCPprocessPipelinesSandbox on CCF subjects.
 
@@ -60,23 +60,23 @@ PARAMETERs are: [ ] = optional; < > = user supplied value
     check, you can allow this to take its default value even if that
     value is incorrect.  
 
-  Path to FreeSurfer license file
-  -------------------------------
-
-  [--freesurfer-license-dir=<path-to-freesurfer-license-directory>]
-
-    The specified path will be bound (i.e. mounted) from your system
-    to a known location (/export/freesurfer_license) in the container
-    or sandbox. This is where the FreeSurfer license file must be
-    found within the container or sandbox.
-
-    If you do not specify a FreeSurfer license directory, it will 
-    default to: ${DEFAULT_FREESURFER_LICENSE_DIR}.
-
-    NOTE: The path to the FreeSurfer license file is only necessary
-    for actual processing of data. If you are running a completion
-    check, you can allow this to take its default value even if that
-    value is incorrect.  
+#  Path to FreeSurfer license file
+#  -------------------------------
+#
+#  [--freesurfer-license-dir=<path-to-freesurfer-license-directory>]
+#
+#    The specified path will be bound (i.e. mounted) from your system
+#    to a known location (/export/freesurfer_license) in the container
+#    or sandbox. This is where the FreeSurfer license file must be
+#    found within the container or sandbox.
+#
+#    If you do not specify a FreeSurfer license directory, it will 
+#    default to: ${DEFAULT_FREESURFER_LICENSE_DIR}.
+#
+#    NOTE: The path to the FreeSurfer license file is only necessary
+#    for actual processing of data. If you are running a completion
+#    check, you can allow this to take its default value even if that
+#    value is incorrect.  
 
   Specification of environment
   ----------------------------
@@ -113,7 +113,7 @@ PARAMETERs are: [ ] = optional; < > = user supplied value
 
     Each line in the subject file must contain the following information:
 
-      <subject-id>:<positive-spin-echo-fieldmap-name>:<negative-spin-echo-fieldmap-name>
+      <subject-id>:<scan>
 
     Anything after a # on a line is considered a comment. To comment out a subject
     information line, simply insert a # as the very first character on the line
@@ -126,11 +126,12 @@ PARAMETERs are: [ ] = optional; < > = user supplied value
 
     This script can:
 
-      1. run the actual Structural Preprocessing for the specified subjects 
-      2. run the completion check for Structural Preprocessing for the specified subjects.
-      3. show the help provided by the container for Structural Preprocessing
-      4. remove the results of Structural Preprocessing for the specified subjects
-         (either prompting you for confirmation of files to delete first, or
+      1. run the actual Functional Preprocessing for the specified scans and subjects 
+      2. run the completion check for Functional Preprocessing for the specified 
+         scans and subjects
+      3. show the help provided by the container for Functional Preprocessing
+      4. remove the results of Functional Preprocessing for the specified scans and
+         subjects (either prompting you for confirmation of files to delete first, or
          with no prompting at all)
 
     You specify which type of processing to perform using one of the following options:
@@ -205,7 +206,7 @@ get_options()
 	unset g_subject_list_file
 	g_study_dir="${DEFAULT_STUDY_DIR}"
 	g_gradient_coeffs_dir="${DEFAULT_GRADIENT_COEFFS_DIR}"
-	g_freesurfer_license_dir="${DEFAULT_FREESURFER_LICENSE_DIR}"
+#	g_freesurfer_license_dir="${DEFAULT_FREESURFER_LICENSE_DIR}"
 	g_env="${DEFAULT_ENV}"
 	g_app="${DEFAULT_APP}"
 			
@@ -230,10 +231,10 @@ get_options()
 				g_gradient_coeffs_dir=${argument/*=/""}
 				index=$(( index + 1 ))
 				;;
-			--freesurfer-license-dir=*)
-				g_freesurfer_license_dir=${argument/*=/""}
-				index=$(( index + 1 ))
-				;;
+			# --freesurfer-license-dir=*)
+			# 	g_freesurfer_license_dir=${argument/*=/""}
+			# 	index=$(( index + 1 ))
+			# 	;;
 			--env=*)
 				g_env=${argument/*=/""}
 				g_env=$(echo ${g_env} | tr '[:lower:]' '[:upper:]')
@@ -298,11 +299,11 @@ get_options()
 		abort "--gradient-coeffs-dir=<gradient-coeffs-directory> must be specified"
 	fi
 
-	if [ -n "${g_freesurfer_license_dir}" ]; then
-		echo "INFO: FreeSurfer license directory: ${g_freesurfer_license_dir}"
-	else
-		abort "--freesurfer-license-dir=<freesurfer-license-directory> must be specified"
-	fi
+	# if [ -n "${g_freesurfer_license_dir}" ]; then
+	# 	echo "INFO: FreeSurfer license directory: ${g_freesurfer_license_dir}"
+	# else
+	# 	abort "--freesurfer-license-dir=<freesurfer-license-directory> must be specified"
+	# fi
 	
 	if [ -z "${g_env}" ]; then
 		abort "environment (--env=[CONTAINER|SANDBOX], --container, or --sandbox) required"
@@ -335,21 +336,27 @@ get_options()
 	fi
 }
 
-remove_ccf_struct_results()
+remove_ccf_func_results()
 {
 	local study_dir
 	local subject
+	local scan
 
 	study_dir="${1}"
 	subject="${2}"
-	
+	scan="${3}"
+
 	pushd ${study_dir}/${subject} > /dev/null
 
-	sudo find . ! -path "./ProcessingInfo*" -newer ProcessingInfo/${subject}.StructuralPreprocessing.starttime -type f -delete
-	sudo find . ! -path "./ProcessingInfo*" -newer ProcessingInfo/${subject}.StructuralPreprocessing.starttime -type d -empty -delete
-	sudo rm ProcessingInfo/${subject}.StructuralPreprocessing.CHECK.log
-	sudo rm ProcessingInfo/${subject}.StructuralPreprocessing.*.execinfo
-	sudo rm ProcessingInfo/${subject}.StructuralPreprocessing.starttime
+	sudo find ./T1w/Results/${scan} -newer ProcessingInfo/${subject}.FunctionalPreprocessing_${scan}.starttime -type f -delete
+	sudo find ./T1w/Results/${scan} -newer ProcessingInfo/${subject}.FunctionalPreprocessing_${scan}.starttime -type d -empty -delete
+
+	sudo find ./${scan} -newer ProcessingInfo/${subject}.FunctionalPreprocessing_${scan}.starttime -type f -delete
+	sudo find ./${scan} -newer ProcessingInfo/${subject}.FunctionalPreprocessing_${scan}.starttime -type d -empty -delete
+
+	sudo rm ProcessingInfo/${subject}.FunctionalPreprocessing.CHECK_${scan}.log
+	sudo rm ProcessingInfo/${subject}.FunctionalPreprocessing.SINGULARITY_PROCESS_${scan}.execinfo
+	sudo rm ProcessingInfo/${subject}.FunctionalPreprocessing_${scan}.starttime
 
 	popd > /dev/null
 }
@@ -358,18 +365,17 @@ main()
 {
 	local line
 	local subject_id
-	local pos_fieldmap
-	local neg_fieldmap
+	# local pos_fieldmap
+	# local neg_fieldmap
 	local run_cmd
 	local where_study_is_on_my_system
 	local where_study_must_be_in_container
 	local where_gc_files_are_on_my_system
 	local where_gc_files_must_be_in_container
-	local where_license_file_is_on_my_system
-	local where_license_file_must_be_in_container
+	# local where_license_file_is_on_my_system
+	# local where_license_file_must_be_in_container
 		
 	get_options "$@"
-
 
 	if [ "${g_app}" = "PROCESSHELP" ]; then
 
@@ -383,9 +389,9 @@ main()
 			#       SANDBOX will have left around files and directories owned by root and
 			#       the CONTAINER run (if run without the sudo) will not be able to delete
 			#       or update these files or directories.
-			run_cmd+="sudo singularity run --app StructuralPreprocessing HCPprocessPipelines.simg"
+			run_cmd+="sudo singularity run --app FunctionalPreprocessing HCPprocessPipelines.simg"
 		elif [ "${g_env}" = "SANDBOX" ]; then
-			run_cmd+="sudo singularity exec HCPprocessPipelinesSandbox/ /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+			run_cmd+="sudo singularity exec HCPprocessPipelinesSandbox/ /pipeline_tools/HCPpipelinesRunUtils/FunctionalPreprocessing/FunctionalPreprocessing.SINGULARITY_PROCESS"
 		else
 			abort "Unrecognized environment: ${g_env}"
 		fi
@@ -412,20 +418,17 @@ main()
 			continue
 		fi
 			
-		# break into subject_id, pos_fieldmap, and neg_fieldmap
+		# break into subject_id and scan
+		
 		subject_id=${line%%:*}			# subject_id is everything before the first :
 		line=${line#${subject_id}:} 	# strip subject_id and : from the front of line
-		
-		pos_fieldmap=${line%%:*}		# pos_fieldmap is everything before the first :
-		line=${line#${pos_fieldmap}:}	# strip pos_fieldmap and : from the front of line
-		
-		neg_fieldmap=${line}			# neg_fieldmap is everything that is left
 
+		scan=${line}					# scan is everything that is left
 
 		if [ "${g_app}" = "PROCESS" ]; then
 
 			echo ""
-			echo "-- Running processing for subject: ${subject_id}:${pos_fieldmap}:${neg_fieldmap} --"
+			echo "-- Running processing for subject: ${subject_id}:${scan} --"
 			echo ""
 			
 			run_cmd=""
@@ -460,25 +463,25 @@ main()
 			
 			run_cmd+=" -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container}"
 			
-			# Bind folder with FreeSurfer License
-			# Needs to show up as the /export/freesurfer_license directory in the Container/Sandbox
-			# Must contain a file named 'license.txt'
-			where_license_file_is_on_my_system="${g_freesurfer_license_dir}"
-			where_license_file_must_be_in_container="/export/freesurfer_license"
+			# # Bind folder with FreeSurfer License
+			# # Needs to show up as the /export/freesurfer_license directory in the Container/Sandbox
+			# # Must contain a file named 'license.txt'
+			# where_license_file_is_on_my_system="${g_freesurfer_license_dir}"
+			# where_license_file_must_be_in_container="/export/freesurfer_license"
 			
-			run_cmd+=" -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container}"
+			# run_cmd+=" -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container}"
 			
 			# Specify command or script to run
 			if [ "${g_env}" = "CONTAINER" ]; then
 				# application in the container to run
-				run_cmd+=" --app StructuralPreprocessing"
+				run_cmd+=" --app FunctionalPreprocessing"
 				# container image file
 				run_cmd+=" HCPprocessPipelines.simg"
 			elif [ "${g_env}" = "SANDBOX" ]; then
 				# sandbox directory 
 				run_cmd+=" HCPprocessPipelinesSandbox/"
 				# full path to script within sandbox to execute
-				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/FunctionalPreprocessing/FunctionalPreprocessing.SINGULARITY_PROCESS"
 			else
 				abort "Unrecognized environment: ${g_env}"
 			fi
@@ -487,33 +490,11 @@ main()
 			run_cmd+=" --working-dir=/study" # Note: this path is from within the container
 			run_cmd+=" --subject=${subject_id}"
 			run_cmd+=" --classifier=V1_MR"
-			run_cmd+=" --brainsize=150"
-			
-			run_cmd+=" --first-t1w-directory-name=T1w_MPR_vNav_4e_RMS"
-			run_cmd+=" --first-t1w-file-name=${subject_id}_V1_MR_T1w_MPR_vNav_4e_RMS.nii.gz"
-			
-			run_cmd+=" --first-t2w-directory-name=T2w_SPC_vNav"
-			run_cmd+=" --first-t2w-file-name=${subject_id}_V1_MR_T2w_SPC_vNav.nii.gz"
-			
-			run_cmd+=" --t1template=MNI152_T1_0.8mm.nii.gz"
-			run_cmd+=" --t1templatebrain=MNI152_T1_0.8mm_brain.nii.gz"
-			run_cmd+=" --t1template2mm=MNI152_T1_2mm.nii.gz"
-			
-			run_cmd+=" --t2template=MNI152_T2_0.8mm.nii.gz"
-			run_cmd+=" --t2templatebrain=MNI152_T2_0.8mm_brain.nii.gz"
-			run_cmd+=" --t2template2mm=MNI152_T2_2mm.nii.gz"
-			
-			run_cmd+=" --templatemask=MNI152_T1_0.8mm_brain_mask.nii.gz"
-			run_cmd+=" --template2mmmask=MNI152_T1_2mm_brain_mask_dil.nii.gz"
-			
-			run_cmd+=" --fnirtconfig=T1_2_MNI152_2mm.cnf"
-			run_cmd+=" --gdcoeffs=Prisma_3T_coeff_AS82.grad"
+			run_cmd+=" --scan=${scan}"
+			run_cmd+=" --dcmethod=TOPUP"
 			run_cmd+=" --topupconfig=b02b0.cnf"
-			
-			run_cmd+=" --fieldmap-type=SpinEcho"
-			run_cmd+=" --se-phase-pos=${pos_fieldmap}"
-			run_cmd+=" --se-phase-neg=${neg_fieldmap}"
-			
+			run_cmd+=" --gdcoeffs=Prisma_3T_coeff_AS82.grad"
+
 			echo "run_cmd: ${run_cmd}"
 			
 			time ${run_cmd}
@@ -521,7 +502,7 @@ main()
 		elif [ "${g_app}" = "CHECK" ]; then
 
 			echo ""
-			echo "-- Checking completeness for subject: ${subject_id}:${pos_fieldmap}:${neg_fieldmap} --"
+			echo "-- Checking completeness for subject: ${subject_id}:${scan} --"
 			echo ""
 			
 			run_cmd=""
@@ -552,14 +533,14 @@ main()
 			# Specify command or script to run
 			if [ "${g_env}" = "CONTAINER" ]; then
 				# application in the container to run
-				run_cmd+=" --app StructuralPreprocessingCheckData"
+				run_cmd+=" --app FunctionalPreprocessingCheckData"
 				# container image file
 				run_cmd+=" HCPprocessPipelines.simg"
 			elif [ "${g_env}" = "SANDBOX" ]; then
 				# sandbox directory 
 				run_cmd+=" HCPprocessPipelinesSandbox/"
 				# full path to script within sandbox to execute
-				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.CHECK"
+				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/FunctionalPreprocessing/FunctionalPreprocessing.CHECK"
 			else
 				abort "Unrecognized environment: ${g_env}"
 			fi
@@ -568,6 +549,7 @@ main()
 			run_cmd+=" --working-dir=/study"
 			run_cmd+=" --subject=${subject_id}"
 			run_cmd+=" --classifier=V1_MR"
+			run_cmd+=" --scan=${scan}"
 			
 			echo "run_cmd: ${run_cmd}"
 			
@@ -576,17 +558,15 @@ main()
 		elif [ "${g_app}" = "REMOVE_RESULTS" ]; then
 
 			echo ""
-			echo "WARNING: Working on subject: ${subject_id}."
+			echo "WARNING: Working on subject: ${subject_id}:${scan}."
 			echo ""
-            echo "         Cleaning all files in the subject's data directory that are"
-			echo "         newer than the Structural Preprocessing start time marker  "
-			echo "         file. This means that Structural Preprocessing results and "
-			echo "         any results of processing subsequent to Structural         "
-			echo "         Preprocessing will be removed."
-			echo ""
+			echo "         Removing all files in the subject's T1w/Results/${scan} directory"
+			echo "         and ${scan} directory that are newer that the Functional Preprocessing"
+			echo "         start time marker file for the scan: ${scan}"
+		    echo ""
 
 			if should_proceed; then
-				remove_ccf_struct_results "${g_study_dir}" "${subject_id}"
+				remove_ccf_func_results "${g_study_dir}" "${subject_id}" "${scan}"
 			else
 				echo ""
 				echo "FILES NOT DELETED - RESULTS NOT REMOVED FOR SUBJECT: ${subject_id}"
@@ -595,8 +575,8 @@ main()
 
 		elif [ "${g_app}" == "FORCE_REMOVE_RESULTS" ]; then
 
-			remove_ccf_struct_results "${g_study_dir}" "${subject_id}"
-			
+			remove_ccf_func_results "${g_study_dir}" "${subject_id}" "${scan}"
+
 		else
 
 			abort "Unrecognized app: ${g_app}"
