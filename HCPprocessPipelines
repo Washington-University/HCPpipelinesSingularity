@@ -32,9 +32,8 @@ From: centos:7.5.1804
 	mkdir -p /export/freesurfer_license
 	cd /pipeline_tools
 	
-	####	hcp_pipelines_run_utils v1.1.0	################# NEEDS to CHANGE the REPOSITORY !!!!!!!!!!!!!!!
-	#wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.1.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
-	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/master.tar.gz -O hcp_pipelines_run_utils.tar.gz
+	####	hcp_pipelines_run_utils v1.2.0
+	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.2.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
 	tar xvf hcp_pipelines_run_utils.tar.gz -C /pipeline_tools/HCPpipelinesRunUtils --strip-components=1
 	rm hcp_pipelines_run_utils.tar.gz
 
@@ -141,10 +140,14 @@ From: centos:7.5.1804
 	ln -s /export/HCP/gradient_coefficient_files/Prisma_3T_coeff_AS82.grad /export/HCP/Pipelines/global/config/Prisma_3T_coeff_AS82.grad
 	ln -s /export/freesurfer_license/license.txt /export/freesurfer-6.0/license.txt
 
-	####	recon-all.v6.hires
+	####	CUSTOM: recon-all.v6.hires
 	cp /export/HCP/Pipelines/FreeSurferCustomizations/recon-all.v6.hires /export/freesurfer-6.0/bin/recon-all.v6.hires
 	chmod 775 /export/freesurfer-6.0/bin/recon-all.v6.hires
-	
+
+	####	CUSTOM: mris_make_surfaces.t2flair.pial
+	cp /export/HCP/Pipelines/FreeSurferCustomizations/mris_make_surfaces.t2flair.pial /export/freesurfer-6.0/bin/mris_make_surfaces.t2flair.pial
+	chmod 775 /export/freesurfer-6.0/bin/mris_make_surfaces.t2flair.pial
+
 %environment
 	export PATH=/opt/miniconda/bin:${PATH}
 	source activate singlepython3
