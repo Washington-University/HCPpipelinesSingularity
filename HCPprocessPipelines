@@ -20,7 +20,7 @@ From: centos:7.5.1804
 
 %post
 	yum -y update && yum -y upgrade
-	yum install -y wget tar.x86_64 gzip unzip git which bzip2 bc hostname tcsh libgomp libGLU libXmu gcc
+	yum install -y wget tar.x86_64 gzip unzip git which bzip2 bc hostname tcsh libgomp libGLU libXmu gcc qt5-qtbase libXrender xorg-x11-fonts-Type1 mesa-dri-drivers mesa-libGL-devel
 	mkdir -p /pipeline_tools/HCPpipelinesRunUtils
 	mkdir -p /HCP/intradb/archive
 	mkdir -p /HCP/hcpdb/archive
@@ -151,6 +151,7 @@ From: centos:7.5.1804
 %environment
 	export PATH=/opt/miniconda/bin:${PATH}
 	source activate singlepython3
+	export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
 	export HCP_RUN_UTILS=/pipeline_tools/HCPpipelinesRunUtils
 	export FSLDIR=/export/fsl-5.0.11
 	source ${FSLDIR}/etc/fslconf/fsl.sh
