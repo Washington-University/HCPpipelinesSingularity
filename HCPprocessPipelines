@@ -19,7 +19,6 @@ From: centos:7.5.1804
 	Maintainer Connectome Coordination Facility
 
 %post
-	yum -y update && yum -y upgrade
 	yum install -y wget tar.x86_64 gzip unzip git which bzip2 bc hostname tcsh libgomp libGLU libXmu gcc qt5-qtbase libXrender xorg-x11-fonts-Type1 mesa-dri-drivers mesa-libGL-devel
 	mkdir -p /pipeline_tools/HCPpipelinesRunUtils
 	mkdir -p /HCP/intradb/archive
