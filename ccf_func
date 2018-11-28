@@ -1,11 +1,14 @@
 #!/bin/bash
 
 SCRIPT_NAME=$(basename "${0}")
-DEFAULT_STUDY_DIR="${HOME}/data/mystudy"
+SCRIPT_DIRECTORY=$(dirname "${0}")
 DEFAULT_GRADIENT_COEFFS_DIR="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
 DEFAULT_FREESURFER_LICENSE_DIR="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
 DEFAULT_APP="PROCESS"
 DEFAULT_ENV="CONTAINER"
+
+source ${SCRIPT_DIRECTORY}/user_utils.shlib
+source ${SCRIPT_DIRECTORY}/func_utils.shlib
 
 usage()
 {
@@ -13,7 +16,7 @@ usage()
 
 ${SCRIPT_NAME}: 
 
-  This script demonstrates how to run Structural Preprocessing related applications 
+  This script demonstrates how to run Functional Preprocessing related applications 
   available within the HCPprocessPipelines.simg Singularity container or within the
   corresponding HCPprocessPipelinesSandbox on CCF subjects.
 
@@ -22,21 +25,6 @@ Usage: ${SCRIPT_NAME} PARAMETER ...
 PARAMETERs are: [ ] = optional; < > = user supplied value
 
   [--help] : show this usage information and exit
-
-  Path to study directory
-  -----------------------
-
-  [--study-dir=<path-to-study-directory>]
-
-    The specified path will be bound (i.e. mounted) from your system
-    to a known location (/study) in the container or sandbox. This is 
-    where the study data must be found within the container or sandbox.
-
-    It is assumed that your study directory contains subdirectories that 
-    correspond to your subject IDs.
-
-    If you do not specify a study directory, the study directory will 
-    default to: ${DEFAULT_STUDY_DIR}.
 
   Path to gradient coefficients files
   -----------------------------------
@@ -111,9 +99,11 @@ PARAMETERs are: [ ] = optional; < > = user supplied value
 
     You must specify a file containing a list of subject information lines. 
 
+    The --subject-list= option is used to specify the path to the subject file.
+
     Each line in the subject file must contain the following information:
 
-      <subject-id>:<positive-spin-echo-fieldmap-name>:<negative-spin-echo-fieldmap-name>
+      <study-dir>:<subject-id>:<scan>
 
     Anything after a # on a line is considered a comment. To comment out a subject
     information line, simply insert a # as the very first character on the line
@@ -126,11 +116,12 @@ PARAMETERs are: [ ] = optional; < > = user supplied value
 
     This script can:
 
-      1. run the actual Structural Preprocessing for the specified subjects 
-      2. run the completion check for Structural Preprocessing for the specified subjects.
-      3. show the help provided by the container for Structural Preprocessing
-      4. remove the results of Structural Preprocessing for the specified subjects
-         (either prompting you for confirmation of files to delete first, or
+      1. run the actual Functional Preprocessing for the specified scans and subjects 
+      2. run the completion check for Functional Preprocessing for the specified 
+         scans and subjects
+      3. show the help provided by the container for Functional Preprocessing
+      4. remove the results of Functional Preprocessing for the specified scans and
+         subjects (either prompting you for confirmation of files to delete first, or
          with no prompting at all)
 
     You specify which type of processing to perform using one of the following options:
@@ -157,53 +148,12 @@ PARAMETERs are: [ ] = optional; < > = user supplied value
 EOF
 }
 
-abort()
-{
-	local error_msg
-	error_msg="${1}"
-
-	echo ""
-	usage
-	echo "--------------------------------------------------"
-	echo "ERROR: ${error_msg}"
-	echo "--------------------------------------------------"
-	echo ""
-	exit 1
-}
-
-is_yes()
-{
-	local answer
-	answer="${1}"
-	# lowercase the answer
-	answer=$(echo ${answer} | tr '[:upper:]' '[:lower:]')
-	if [ "${answer}" = "y" ] || [ "${answer}" = "yes" ]; then
-		return 0 # The answer is yes is True
-	else
-		return 1 # The answer is yes is False
-	fi
-}
-
-should_proceed()
-{
-	local proceed
-	echo -ne "Proceed? [n]: "
-	read proceed
-
-	if is_yes ${proceed}; then
-		return 0 # should proceed
-	else
-		return 1 # should NOT proceed
-	fi
-}
-	
 get_options()
 {
 	local arguments=($@)
 	
 	# initialize global output variables
 	unset g_subject_list_file
-	g_study_dir="${DEFAULT_STUDY_DIR}"
 	g_gradient_coeffs_dir="${DEFAULT_GRADIENT_COEFFS_DIR}"
 	g_freesurfer_license_dir="${DEFAULT_FREESURFER_LICENSE_DIR}"
 	g_env="${DEFAULT_ENV}"
@@ -221,10 +171,6 @@ get_options()
 			--help)
 				usage
 				exit 1
-				;;
-			--study-dir=*)
-				g_study_dir=${argument/*=/""}
-				index=$(( index + 1 ))
 				;;
 			--gradient-coeffs_dir=*)
 				g_gradient_coeffs_dir=${argument/*=/""}
@@ -277,20 +223,13 @@ get_options()
 				index=$(( index + 1 ))
 				;;
 			*)
-				echo "Unrecognized option: ${argument}"
-				exit 1
+				abort "Unrecognized option: ${argument}"
 				;;
 		esac
 
 	done
 
 	# check parameters
-
-	if [ -n "${g_study_dir}" ]; then
-		echo "INFO: study directory: ${g_study_dir}"
-	else
-		abort "--study-dir=<study-directory> must be specified"
-	fi
 
 	if [ -n "${g_gradient_coeffs_dir}" ]; then
 		echo "INFO: gradient coefficients directory: ${g_gradient_coeffs_dir}"
@@ -335,31 +274,12 @@ get_options()
 	fi
 }
 
-remove_ccf_struct_results()
-{
-	local study_dir
-	local subject
-
-	study_dir="${1}"
-	subject="${2}"
-	
-	pushd ${study_dir}/${subject} > /dev/null
-
-	sudo find . ! -path "./ProcessingInfo*" -newer ProcessingInfo/${subject}.StructuralPreprocessing.starttime -type f -delete
-	sudo find . ! -path "./ProcessingInfo*" -newer ProcessingInfo/${subject}.StructuralPreprocessing.starttime -type d -empty -delete
-	sudo rm ProcessingInfo/${subject}.StructuralPreprocessing.CHECK.log
-	sudo rm ProcessingInfo/${subject}.StructuralPreprocessing.*.execinfo
-	sudo rm ProcessingInfo/${subject}.StructuralPreprocessing.starttime
-
-	popd > /dev/null
-}
-
 main()
 {
 	local line
+	local study_dir
 	local subject_id
-	local pos_fieldmap
-	local neg_fieldmap
+	local scan
 	local run_cmd
 	local where_study_is_on_my_system
 	local where_study_must_be_in_container
@@ -369,7 +289,6 @@ main()
 	local where_license_file_must_be_in_container
 		
 	get_options "$@"
-
 
 	if [ "${g_app}" = "PROCESSHELP" ]; then
 
@@ -383,9 +302,9 @@ main()
 			#       SANDBOX will have left around files and directories owned by root and
 			#       the CONTAINER run (if run without the sudo) will not be able to delete
 			#       or update these files or directories.
-			run_cmd+="sudo singularity run --app StructuralPreprocessing HCPprocessPipelines.simg"
+			run_cmd+="sudo singularity run --app FunctionalPreprocessing HCPprocessPipelines.simg"
 		elif [ "${g_env}" = "SANDBOX" ]; then
-			run_cmd+="sudo singularity exec HCPprocessPipelinesSandbox/ /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+			run_cmd+="sudo singularity exec HCPprocessPipelinesSandbox/ /pipeline_tools/HCPpipelinesRunUtils/FunctionalPreprocessing/FunctionalPreprocessing.SINGULARITY_PROCESS"
 		else
 			abort "Unrecognized environment: ${g_env}"
 		fi
@@ -412,20 +331,22 @@ main()
 			continue
 		fi
 			
-		# break into subject_id, pos_fieldmap, and neg_fieldmap
+		# break into study_dir, subject_id, and scan
+		study_dir=${line%%:*}			# study_dir is everything before the first ":"
+		line=${line#${study_dir}:}		# strip study_dir and : from the front of the line
+
 		subject_id=${line%%:*}			# subject_id is everything before the first :
 		line=${line#${subject_id}:} 	# strip subject_id and : from the front of line
-		
-		pos_fieldmap=${line%%:*}		# pos_fieldmap is everything before the first :
-		line=${line#${pos_fieldmap}:}	# strip pos_fieldmap and : from the front of line
-		
-		neg_fieldmap=${line}			# neg_fieldmap is everything that is left
 
+		scan=${line}					# scan is everything that is left
 
 		if [ "${g_app}" = "PROCESS" ]; then
 
 			echo ""
-			echo "-- Running processing for subject: ${subject_id}:${pos_fieldmap}:${neg_fieldmap} --"
+			echo "-- Running processing for subject: "
+			echo "--   study directory: ${study_dir}"
+			echo "--        subject id: ${subject_id}"
+			echo "--              scan: ${scan}"
 			echo ""
 			
 			run_cmd=""
@@ -448,7 +369,7 @@ main()
 			
 			# Bind your study directory
 			# Needs to show up as the /study directory in the Container/Sandbox
-			where_study_is_on_my_system="${g_study_dir}"
+			where_study_is_on_my_system="${study_dir}"
 			where_study_must_be_in_container="/study"
 			
 			run_cmd+=" -B ${where_study_is_on_my_system}:${where_study_must_be_in_container}"
@@ -471,14 +392,14 @@ main()
 			# Specify command or script to run
 			if [ "${g_env}" = "CONTAINER" ]; then
 				# application in the container to run
-				run_cmd+=" --app StructuralPreprocessing"
+				run_cmd+=" --app FunctionalPreprocessing"
 				# container image file
 				run_cmd+=" HCPprocessPipelines.simg"
 			elif [ "${g_env}" = "SANDBOX" ]; then
 				# sandbox directory 
 				run_cmd+=" HCPprocessPipelinesSandbox/"
 				# full path to script within sandbox to execute
-				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/FunctionalPreprocessing/FunctionalPreprocessing.SINGULARITY_PROCESS"
 			else
 				abort "Unrecognized environment: ${g_env}"
 			fi
@@ -487,33 +408,11 @@ main()
 			run_cmd+=" --working-dir=/study" # Note: this path is from within the container
 			run_cmd+=" --subject=${subject_id}"
 			run_cmd+=" --classifier=V1_MR"
-			run_cmd+=" --brainsize=150"
-			
-			run_cmd+=" --first-t1w-directory-name=T1w_MPR_vNav_4e_RMS"
-			run_cmd+=" --first-t1w-file-name=${subject_id}_V1_MR_T1w_MPR_vNav_4e_RMS.nii.gz"
-			
-			run_cmd+=" --first-t2w-directory-name=T2w_SPC_vNav"
-			run_cmd+=" --first-t2w-file-name=${subject_id}_V1_MR_T2w_SPC_vNav.nii.gz"
-			
-			run_cmd+=" --t1template=MNI152_T1_0.8mm.nii.gz"
-			run_cmd+=" --t1templatebrain=MNI152_T1_0.8mm_brain.nii.gz"
-			run_cmd+=" --t1template2mm=MNI152_T1_2mm.nii.gz"
-			
-			run_cmd+=" --t2template=MNI152_T2_0.8mm.nii.gz"
-			run_cmd+=" --t2templatebrain=MNI152_T2_0.8mm_brain.nii.gz"
-			run_cmd+=" --t2template2mm=MNI152_T2_2mm.nii.gz"
-			
-			run_cmd+=" --templatemask=MNI152_T1_0.8mm_brain_mask.nii.gz"
-			run_cmd+=" --template2mmmask=MNI152_T1_2mm_brain_mask_dil.nii.gz"
-			
-			run_cmd+=" --fnirtconfig=T1_2_MNI152_2mm.cnf"
-			run_cmd+=" --gdcoeffs=Prisma_3T_coeff_AS82.grad"
+			run_cmd+=" --scan=${scan}"
+			run_cmd+=" --dcmethod=TOPUP"
 			run_cmd+=" --topupconfig=b02b0.cnf"
-			
-			run_cmd+=" --fieldmap-type=SpinEcho"
-			run_cmd+=" --se-phase-pos=${pos_fieldmap}"
-			run_cmd+=" --se-phase-neg=${neg_fieldmap}"
-			
+			run_cmd+=" --gdcoeffs=Prisma_3T_coeff_AS82.grad"
+
 			echo "run_cmd: ${run_cmd}"
 			
 			time ${run_cmd}
@@ -521,7 +420,10 @@ main()
 		elif [ "${g_app}" = "CHECK" ]; then
 
 			echo ""
-			echo "-- Checking completeness for subject: ${subject_id}:${pos_fieldmap}:${neg_fieldmap} --"
+			echo "-- Checking completeness for subject: "
+			echo "--   study directory: ${study_dir}"
+			echo "--        subject id: ${subject_id}"
+			echo "--              scan: ${scan}"
 			echo ""
 			
 			run_cmd=""
@@ -544,7 +446,7 @@ main()
 			
 			# Bind your data directory
 			# Needs to show up as the /data directory in the Container/Sandbox
-			where_study_is_on_my_system="${g_study_dir}"
+			where_study_is_on_my_system="${study_dir}"
 			where_study_must_be_in_container="/study"
 			
 			run_cmd+=" -B ${where_study_is_on_my_system}:${where_study_must_be_in_container}"
@@ -552,14 +454,14 @@ main()
 			# Specify command or script to run
 			if [ "${g_env}" = "CONTAINER" ]; then
 				# application in the container to run
-				run_cmd+=" --app StructuralPreprocessingCheckData"
+				run_cmd+=" --app FunctionalPreprocessingCheckData"
 				# container image file
 				run_cmd+=" HCPprocessPipelines.simg"
 			elif [ "${g_env}" = "SANDBOX" ]; then
 				# sandbox directory 
 				run_cmd+=" HCPprocessPipelinesSandbox/"
 				# full path to script within sandbox to execute
-				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.CHECK"
+				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/FunctionalPreprocessing/FunctionalPreprocessing.CHECK"
 			else
 				abort "Unrecognized environment: ${g_env}"
 			fi
@@ -568,6 +470,7 @@ main()
 			run_cmd+=" --working-dir=/study"
 			run_cmd+=" --subject=${subject_id}"
 			run_cmd+=" --classifier=V1_MR"
+			run_cmd+=" --scan=${scan}"
 			
 			echo "run_cmd: ${run_cmd}"
 			
@@ -576,17 +479,15 @@ main()
 		elif [ "${g_app}" = "REMOVE_RESULTS" ]; then
 
 			echo ""
-			echo "WARNING: Working on subject: ${subject_id}."
+			echo "WARNING: Working on subject: ${subject_id}:${scan}."
 			echo ""
-            echo "         Cleaning all files in the subject's data directory that are"
-			echo "         newer than the Structural Preprocessing start time marker  "
-			echo "         file. This means that Structural Preprocessing results and "
-			echo "         any results of processing subsequent to Structural         "
-			echo "         Preprocessing will be removed."
-			echo ""
+			echo "         Removing all files in the subject's T1w/Results/${scan} directory"
+			echo "         and ${scan} directory that are newer that the Functional Preprocessing"
+			echo "         start time marker file for the scan: ${scan}"
+		    echo ""
 
 			if should_proceed; then
-				remove_ccf_struct_results "${g_study_dir}" "${subject_id}"
+				remove_ccf_func_results "${g_study_dir}" "${subject_id}" "${scan}"
 			else
 				echo ""
 				echo "FILES NOT DELETED - RESULTS NOT REMOVED FOR SUBJECT: ${subject_id}"
@@ -595,8 +496,8 @@ main()
 
 		elif [ "${g_app}" == "FORCE_REMOVE_RESULTS" ]; then
 
-			remove_ccf_struct_results "${g_study_dir}" "${subject_id}"
-			
+			remove_ccf_func_results "${g_study_dir}" "${subject_id}" "${scan}"
+
 		else
 
 			abort "Unrecognized app: ${g_app}"

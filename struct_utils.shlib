@@ -1,0 +1,25 @@
+
+remove_ccf_struct_results()
+{
+	local study_dir
+	local subject
+	local subject_dir
+	local starttime_file
+	
+	study_dir="${1}"
+	subject="${2}"
+
+	subject_dir="${study_dir}/${subject}"
+	starttime_file="ProcessingInfo/${subject}.StructuralPreprocessing.starttime"
+
+	pushd ${subject_dir} > /dev/null
+
+	sudo find . ! -path "./ProcessingInfo*" -newer ${starttime_file} -type f -delete
+	sudo find . ! -path "./ProcessingInfo*" -newer ${starttime_file} -type l -delete
+	sudo find . ! -path "./ProcessingInfo*" -newer ${starttime_file} -type d -empty -delete
+	sudo rm ProcessingInfo/${subject}.StructuralPreprocessing.CHECK.*
+	sudo rm ProcessingInfo/${subject}.StructuralPreprocessing.*.execinfo
+	sudo rm ProcessingInfo/${subject}.StructuralPreprocessing.starttime
+
+	popd > /dev/null
+}
