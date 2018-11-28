@@ -94,18 +94,18 @@ From: centos:7.5.1804
 	rm -r gradunwarp-1.1.0
 	rm gradunwarp.tar.gz
 	
-	####	install fsl 
-	wget http://www.fmrib.ox.ac.uk/fsldownloads/fsl-5.0.11-centos7_64.tar.gz
-	mkdir /export/fsl-5.0.11
-	tar -xvzf fsl-5.0.11-centos7_64.tar.gz -C /export/fsl-5.0.11 --strip-components=1
-	bash /export/fsl-5.0.11/etc/fslconf/post_install.sh -f /export/fsl-5.0.11
-	rm fsl-5.0.11-centos7_64.tar.gz
+	####	install fsl-6.0.0
+	wget http://www.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.0-centos7_64.tar.gz
+	mkdir /export/fsl-6.0.0
+	tar -xvzf fsl-6.0.0-centos7_64.tar.gz -C /export/fsl-6.0.0 --strip-components=1
+	bash /export/fsl-6.0.0/etc/fslconf/post_install.sh -f /export/fsl-6.0.0
+	rm fsl-6.0.0-centos7_64.tar.gz
 	shopt -s extglob
-	rm -rf /export/fsl-5.0.11/data/!(standard)
-	rm -rf /export/fsl-5.0.11/doc/*
-	rm -rf /export/fsl-5.0.11/fslpython/pkgs/*.tar.bz2
-	rm -rf /export/fsl-5.0.11/src/*
-	rm -rf /export/fsl-5.0.11/extras/src/*
+	rm -rf /export/fsl-6.0.0/data/!(standard)
+	rm -rf /export/fsl-6.0.0/doc/*
+	rm -rf /export/fsl-6.0.0/fslpython/pkgs/*.tar.bz2
+	rm -rf /export/fsl-6.0.0/src/*
+	rm -rf /export/fsl-6.0.0/extras/src/*
 	
 	####	install MSM_HOCR_v2
 	wget https://www.doc.ic.ac.uk/~ecr05/MSM_HOCR_v2/MSM_HOCR_v2-download.tgz
@@ -153,7 +153,7 @@ From: centos:7.5.1804
 	source activate singlepython3
 	export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
 	export HCP_RUN_UTILS=/pipeline_tools/HCPpipelinesRunUtils
-	export FSLDIR=/export/fsl-5.0.11
+	export FSLDIR=/export/fsl-6.0.0
 	source ${FSLDIR}/etc/fslconf/fsl.sh
 	export FSL_DIR="${FSLDIR}"
 	export FREESURFER_HOME=/export/freesurfer-6.0
