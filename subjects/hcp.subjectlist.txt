@@ -1,0 +1,2 @@
+# study-dir:subject-id
+/home/tbb/data/HCPYA/100307

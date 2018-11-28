@@ -1,10 +1,14 @@
 #!/bin/bash
 
 SCRIPT_NAME=$(basename "${0}")
-DEFAULT_STUDY_DIR="${HOME}/data/mystudy"
+SCRIPT_DIRECTORY=$(dirname "${0}")
 DEFAULT_GRADIENT_COEFFS_DIR="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
 DEFAULT_FREESURFER_LICENSE_DIR="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
-DEFAULT_APP=PROCESS
+DEFAULT_APP="PROCESS"
+DEFAULT_ENV="CONTAINER"
+
+source ${SCRIPT_DIRECTORY}/user_utils.shlib
+source ${SCRIPT_DIRECTORY}/struct_utils.shlib
 
 usage()
 {
@@ -21,21 +25,6 @@ Usage: ${SCRIPT_NAME} PARAMETER ...
 PARAMETERs are: [ ] = optional; < > = user supplied value
 
   [--help] : show this usage information and exit
-
-  Path to study directory
-  -----------------------
-
-  [--study-dir=<path-to-study-directory>]
-
-    The specified path will be bound (i.e. mounted) from your system
-    to a known location (/study) in the container or sandbox. This is 
-    where the study data must be found within the container or sandbox.
-
-    It is assumed that your study directory contains subdirectories that 
-    correspond to your subject IDs.
-
-    If you do not specify a study directory, the study directory will 
-    default to: ${DEFAULT_STUDY_DIR}.
 
   Path to gradient coefficients files
   -----------------------------------
@@ -80,11 +69,11 @@ PARAMETERs are: [ ] = optional; < > = user supplied value
   Specification of environment
   ----------------------------
 
-    You must specify whether to perform the requested processing
+    You may specify whether to perform the requested processing
     in the Singularity Container (HCPprocessPipelines.simg) or 
     in the Singularity Sandbox (HCPprocessPipelinesSandbox/).
 
-    One of the following options must be specified:
+    One of the following options may be specified:
 
       --env=[CONTAINER|SANDBOX]
       --container
@@ -96,10 +85,11 @@ PARAMETERs are: [ ] = optional; < > = user supplied value
     are all valid, but --env=CONTAIN is not valid.
 
       --container is equivalent to --env=CONTAINER
-
       --sandbox is equivalent to --env=SANDBOX
 
-    NOTE: To run within the Sandbox, you will need sudo privileges
+    If no --env= option is specified, this script defaults to --env=${DEFAULT_ENV}.
+
+    NOTE: To run some apps, you will need sudo privileges
     on the machine on which you are running. When commands are run
     with sudo, you may be prompted for your password to validate 
     your sudo privileges. 
@@ -107,11 +97,13 @@ PARAMETERs are: [ ] = optional; < > = user supplied value
   Subject List File
   -----------------
 
-    You must specify a file containing a list of subject information lines. 
+    You must specify a file containing a list of subject information lines.
+
+    The --subject-list= option is used to specify the path to the subject file.
 
     Each line in the subject file must contain the following information:
 
-      <subject-id>:<positive-spin-echo-fieldmap-name>:<negative-spin-echo-fieldmap-name>
+      <study-dir>:<subject-id>:<positive-spin-echo-fieldmap-name>:<negative-spin-echo-fieldmap-name>
 
     Anything after a # on a line is considered a comment. To comment out a subject
     information line, simply insert a # as the very first character on the line
@@ -127,40 +119,32 @@ PARAMETERs are: [ ] = optional; < > = user supplied value
       1. run the actual Structural Preprocessing for the specified subjects 
       2. run the completion check for Structural Preprocessing for the specified subjects.
       3. show the help provided by the container for Structural Preprocessing
+      4. remove the results of Structural Preprocessing for the specified subjects
+         (either prompting you for confirmation of files to delete first, or
+         with no prompting at all)
 
     You specify which type of processing to perform using one of the following options:
 
-      --app=[PROCESS|CHECK|PROCESSHELP]
+      --app=[PROCESS|CHECK|REMOVE_RESULTS|FORCE_REMOVE_RESULTS|PROCESSHELP]
       --process
       --check
       --process-help
+      --remove-results        (prompts for confirmation)
+      --force-remove-results  (no prompting - dangerous)
 
     The value specified for the --app= parameter is not case sensitive, but must be
-    PROCESS, CHECK, or PROCESSHELP. For example, --app=Process, --app=PROCess, and 
+    one of the listed apps. For example, --app=Process, --app=PROCess, and 
     --app=ChecK are all valid, but --app=PRO is not valid.
 
       --process is equivalent to --app=PROCESS
       --check is equivalent to --app=CHECK
+      --remove-results is equivalent to --app=REMOVE_RESULTS
+      --force-remove-results is equivalent to --app=FORCE_REMOVE_RESULTS
       --process-help is equivalent to --app=PROCESSHELP
 
-    If no --app= option or --process, --check, or --process-help option is specified, 
-    this script defaults to --app=${DEFAULT_APP}.
+    If no --app= option is specified, this script defaults to --app=${DEFAULT_APP}.
 
 EOF
-}
-
-abort()
-{
-	local error_msg
-	error_msg="${1}"
-
-	echo ""
-	usage
-	echo "--------------------------------------------------"
-	echo "ERROR: ${error_msg}"
-	echo "--------------------------------------------------"
-	echo ""
-	exit 1
 }
 
 get_options()
@@ -169,12 +153,11 @@ get_options()
 	
 	# initialize global output variables
 	unset g_subject_list_file
-	g_study_dir="${DEFAULT_STUDY_DIR}"
 	g_gradient_coeffs_dir="${DEFAULT_GRADIENT_COEFFS_DIR}"
 	g_freesurfer_license_dir="${DEFAULT_FREESURFER_LICENSE_DIR}"
-	unset g_env
+	g_env="${DEFAULT_ENV}"
 	g_app="${DEFAULT_APP}"
-			
+	
 	# parse arguments
 	local num_args=${#arguments[@]}
 	local argument
@@ -187,10 +170,6 @@ get_options()
 			--help)
 				usage
 				exit 1
-				;;
-			--study-dir=*)
-				g_study_dir=${argument/*=/""}
-				index=$(( index + 1 ))
 				;;
 			--gradient-coeffs_dir=*)
 				g_gradient_coeffs_dir=${argument/*=/""}
@@ -234,21 +213,22 @@ get_options()
 				g_app="PROCESSHELP"
 				index=$(( index + 1 ))
 				;;
+			--remove-results)
+				g_app="REMOVE_RESULTS"
+				index=$(( index + 1 ))
+				;;
+			--force-remove-results)
+				g_app="FORCE_REMOVE_RESULTS"
+				index=$(( index + 1 ))
+				;;
 			*)
-				echo "Unrecognized option: ${argument}"
-				exit 1
+				abort "Unrecognized option: ${argument}"
 				;;
 		esac
 
 	done
 
 	# check parameters
-
-	if [ -n "${g_study_dir}" ]; then
-		echo "INFO: study directory: ${g_study_dir}"
-	else
-		abort "--study-dir=<study-directory> must be specified"
-	fi
 
 	if [ -n "${g_gradient_coeffs_dir}" ]; then
 		echo "INFO: gradient coefficients directory: ${g_gradient_coeffs_dir}"
@@ -273,15 +253,19 @@ get_options()
 	fi
 
 	if [ -z "${g_app}" ]; then
-		abort "app to run (--run-type=[PROCESS|CHECK|PROCESSHELP], --process, --check, or --process-help) required"
+		abort "app to run (--app=<value>, --process, --check, --process-help, --remove-results, --force-remove-results) required"
 	fi
 
-	if [ "${g_app}" != "PROCESS" -a "${g_app}" != "CHECK" -a "${g_app}" != "PROCESSHELP" ]; then 
-		abort "app to run must be PROCESS or CHECK"
+	if [ "${g_app}" != "PROCESS" \
+		 -a "${g_app}" != "CHECK" \
+		 -a "${g_app}" != "PROCESSHELP" \
+	     -a "${g_app}" != "REMOVE_RESULTS" \
+	     -a "${g_app}" != "FORCE_REMOVE_RESULTS" ]; then 
+		abort "Unrecognized app: ${g_app}"
 	fi
 
 	if [ -n "${g_subject_list_file}" ]; then
-		echo "INFO: running processing for subjects listed in file: ${g_subject_list_file}"
+		echo "INFO: running requested app, ${g_app}, for subjects listed in file: ${g_subject_list_file}"
 	else
 		if [ "${g_app}" != "PROCESSHELP" ]; then
 			abort "--subject-list=<subject-list-filename> must be specified"
@@ -292,6 +276,7 @@ get_options()
 main()
 {
 	local line
+	local study_dir
 	local subject_id
 	local pos_fieldmap
 	local neg_fieldmap
@@ -305,13 +290,19 @@ main()
 		
 	get_options "$@"
 
-
 	if [ "${g_app}" = "PROCESSHELP" ]; then
 
 		run_cmd=""
 		
 		if [ "${g_env}" = "CONTAINER" ]; then
-			run_cmd+="singularity run --app StructuralPreprocessing HCPprocessPipelines.simg"
+			# Note: If all applications are run from the CONTAINER, the sudo at the beginning
+			#       of this command is unnecessary. However, if you run some processing first
+			#       within the SANDBOX, in which the sudo is needed, then try to run some
+			#       subsequent processing from the CONTAINER, the processing run from the
+			#       SANDBOX will have left around files and directories owned by root and
+			#       the CONTAINER run (if run without the sudo) will not be able to delete
+			#       or update these files or directories.
+			run_cmd+="sudo singularity run --app StructuralPreprocessing HCPprocessPipelines.simg"
 		elif [ "${g_env}" = "SANDBOX" ]; then
 			run_cmd+="sudo singularity exec HCPprocessPipelinesSandbox/ /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
 		else
@@ -328,7 +319,7 @@ main()
 	fi
 
 	
-	while read -r line; do
+	while read -r -u9 line; do
 
 		# remove comments - anything after a #
 		line=${line%%\#*}
@@ -340,7 +331,10 @@ main()
 			continue
 		fi
 			
-		# break into subject_id, pos_fieldmap, and neg_fieldmap
+		# break into study_dir, subject_id, pos_fieldmap, and neg_fieldmap
+		study_dir=${line%%:*}			# study_dir is everything before the first ":"
+		line=${line#${study_dir}:}		# strip study_dir and : from the front of the line
+		
 		subject_id=${line%%:*}			# subject_id is everything before the first :
 		line=${line#${subject_id}:} 	# strip subject_id and : from the front of line
 		
@@ -349,18 +343,28 @@ main()
 		
 		neg_fieldmap=${line}			# neg_fieldmap is everything that is left
 
-
 		if [ "${g_app}" = "PROCESS" ]; then
 
 			echo ""
-			echo "-- Running processing for subject: ${subject_id}:${pos_fieldmap}:${neg_fieldmap} --"
+			echo "-- Running processing for subject: "
+			echo "--     study directory: ${study_dir}"
+			echo "--          subject id: ${subject_id}"
+			echo "--   positive fieldmap: ${pos_fieldmap}"
+			echo "--   negative fieldmap: ${neg_fieldmap}"
 			echo ""
 			
 			run_cmd=""
 			
 			# Base Singularity command
 			if [ "${g_env}" = "CONTAINER" ]; then
-				run_cmd+="singularity run"
+				# Note: If all applications are run from the CONTAINER, the sudo at the beginning
+				#       of this command is unnecessary. However, if you run some processing first
+				#       within the SANDBOX, in which the sudo is needed, then try to run some
+				#       subsequent processing from the CONTAINER, the processing run from the
+				#       SANDBOX will have left around files and directories owned by root and
+				#       the CONTAINER run (if run without the sudo) will not be able to delete
+				#       or update these files or directories.
+				run_cmd+="sudo singularity run"
 			elif [ "${g_env}" = "SANDBOX" ]; then
 				run_cmd+="sudo singularity exec"
 			else
@@ -369,7 +373,7 @@ main()
 			
 			# Bind your study directory
 			# Needs to show up as the /study directory in the Container/Sandbox
-			where_study_is_on_my_system="${g_study_dir}"
+			where_study_is_on_my_system="${study_dir}"
 			where_study_must_be_in_container="/study"
 			
 			run_cmd+=" -B ${where_study_is_on_my_system}:${where_study_must_be_in_container}"
@@ -442,13 +446,24 @@ main()
 		elif [ "${g_app}" = "CHECK" ]; then
 
 			echo ""
-			echo "-- Checking completeness for subject: ${subject_id}:${pos_fieldmap}:${neg_fieldmap} --"
+			echo "-- Checking completeness for subject: "
+			echo "--     study directory: ${study_dir}"
+			echo "--          subject id: ${subject_id}"
+			echo "--   positive fieldmap: ${pos_fieldmap}"
+			echo "--   negative fieldmap: ${neg_fieldmap}"
 			echo ""
 			
 			run_cmd=""
 			
 			# Base Singularity command
 			if [ "${g_env}" = "CONTAINER" ]; then
+				# Note: If all applications are run from the CONTAINER, the sudo at the beginning
+				#       of this command is unnecessary. However, if you run some processing first
+				#       within the SANDBOX, in which the sudo is needed, then try to run some
+				#       subsequent processing from the CONTAINER, the processing run from the
+				#       SANDBOX will have left around files and directories owned by root and
+				#       the CONTAINER run (if run without the sudo) will not be able to delete
+				#       or update these files or directories.
 				run_cmd+="sudo singularity run"
 			elif [ "${g_env}" = "SANDBOX" ]; then
 				run_cmd+="sudo singularity exec"
@@ -458,7 +473,7 @@ main()
 			
 			# Bind your data directory
 			# Needs to show up as the /data directory in the Container/Sandbox
-			where_study_is_on_my_system="${g_study_dir}"
+			where_study_is_on_my_system="${study_dir}"
 			where_study_must_be_in_container="/study"
 			
 			run_cmd+=" -B ${where_study_is_on_my_system}:${where_study_must_be_in_container}"
@@ -486,6 +501,30 @@ main()
 			echo "run_cmd: ${run_cmd}"
 			
 			time ${run_cmd}
+
+		elif [ "${g_app}" = "REMOVE_RESULTS" ]; then
+
+			echo ""
+			echo "WARNING: Working on subject: ${subject_id}."
+			echo ""
+            echo "         Cleaning all files in the subject's data directory that are"
+			echo "         newer than the Structural Preprocessing start time marker  "
+			echo "         file. This means that Structural Preprocessing results and "
+			echo "         any results of processing subsequent to Structural         "
+			echo "         Preprocessing will be removed."
+			echo ""
+
+			if should_proceed; then
+				remove_ccf_struct_results "${study_dir}" "${subject_id}"
+			else
+				echo ""
+				echo "FILES NOT DELETED - RESULTS NOT REMOVED FOR SUBJECT: ${subject_id}"
+				echo ""
+			fi
+
+		elif [ "${g_app}" == "FORCE_REMOVE_RESULTS" ]; then
+
+			remove_ccf_struct_results "${study_dir}" "${subject_id}"
 			
 		else
 
@@ -493,7 +532,7 @@ main()
 			
 		fi
 			
-	done < "${g_subject_list_file}"
+	done 9< "${g_subject_list_file}"
 }
 
 # Invoke the main function to get things started

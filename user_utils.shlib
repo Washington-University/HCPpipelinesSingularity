@@ -1,0 +1,40 @@
+
+abort()
+{
+	local error_msg
+	error_msg="${1}"
+
+	echo ""
+	usage
+	echo "--------------------------------------------------"
+	echo "ERROR: ${error_msg}"
+	echo "--------------------------------------------------"
+	echo ""
+	exit 1
+}
+
+is_yes()
+{
+	local answer
+	answer="${1}"
+	# lowercase the answer
+	answer=$(echo ${answer} | tr '[:upper:]' '[:lower:]')
+	if [ "${answer}" = "y" ] || [ "${answer}" = "yes" ]; then
+		return 0 # The answer is yes is True
+	else
+		return 1 # The answer is yes is False
+	fi
+}
+
+should_proceed()
+{
+	local proceed
+	echo -ne "Proceed? [n]: "
+	read proceed
+
+	if is_yes ${proceed}; then
+		return 0 # should proceed
+	else
+		return 1 # should NOT proceed
+	fi
+}

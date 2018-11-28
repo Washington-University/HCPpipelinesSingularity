@@ -1,0 +1,25 @@
+
+remove_ccf_func_results()
+{
+	local study_dir
+	local subject
+	local scan
+
+	study_dir="${1}"
+	subject="${2}"
+	scan="${3}"
+
+	pushd ${study_dir}/${subject} > /dev/null
+
+	sudo find ./T1w/Results/${scan} -newer ProcessingInfo/${subject}.FunctionalPreprocessing_${scan}.starttime -type f -delete
+	sudo find ./T1w/Results/${scan} -newer ProcessingInfo/${subject}.FunctionalPreprocessing_${scan}.starttime -type d -empty -delete
+
+	sudo find ./${scan} -newer ProcessingInfo/${subject}.FunctionalPreprocessing_${scan}.starttime -type f -delete
+	sudo find ./${scan} -newer ProcessingInfo/${subject}.FunctionalPreprocessing_${scan}.starttime -type d -empty -delete
+
+	sudo rm ProcessingInfo/${subject}.FunctionalPreprocessing.CHECK_${scan}.log
+	sudo rm ProcessingInfo/${subject}.FunctionalPreprocessing.SINGULARITY_PROCESS_${scan}.execinfo
+	sudo rm ProcessingInfo/${subject}.FunctionalPreprocessing_${scan}.starttime
+
+	popd > /dev/null
+}
