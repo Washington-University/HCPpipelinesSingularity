@@ -148,6 +148,10 @@ From: centos:7.5.1804
 	cp /export/HCP/Pipelines/FreeSurferCustomizations/conf2hires /export/freesurfer-6.0/bin/conf2hires
 	chmod 775 /export/freesurfer-6.0/bin/conf2hires
 
+	####	CUSTOM: longmc
+	cp /export/HCP/Pipelines/FreeSurferCustomizations/longmc /export/freesurfer-6.0/bin/longmc
+	chmod 775 /export/freesurfer-6.0/bin/longmc
+
 %environment
 	export PATH=/opt/miniconda/bin:${PATH}
 	source activate singlepython3
