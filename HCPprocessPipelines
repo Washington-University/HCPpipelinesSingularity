@@ -31,8 +31,9 @@ From: centos:7.5.1804
 	mkdir -p /export/freesurfer_license
 	cd /pipeline_tools
 	
-	####	hcp_pipelines_run_utils v1.3.0
-	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.3.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
+	####	hcp_pipelines_run_utils
+	#wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.3.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
+	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/master/master.tar.gz -O hcp_pipelines_run_utils.tar.gz
 	tar xvf hcp_pipelines_run_utils.tar.gz -C /pipeline_tools/HCPpipelinesRunUtils --strip-components=1
 	rm hcp_pipelines_run_utils.tar.gz
 
