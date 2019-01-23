@@ -1,0 +1,1 @@
+Wed Jan 23 14:38:05 CST 2019: leopardws01:/home/tbb/projects/HCPpipelinesSingularity --> tbbrown@login.chpc.wustl.edu:/home/tbbrown/pipeline_tools
