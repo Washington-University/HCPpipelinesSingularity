@@ -1,0 +1,540 @@
+#!/bin/bash
+
+SCRIPT_NAME=$(basename "${0}")
+SCRIPT_DIRECTORY=$(dirname "${0}")
+DEFAULT_GRADIENT_COEFFS_DIR="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
+DEFAULT_FREESURFER_LICENSE_DIR="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
+DEFAULT_APP="PROCESS"
+DEFAULT_ENV="CONTAINER"
+
+source ${SCRIPT_DIRECTORY}/user_utils.shlib
+source ${SCRIPT_DIRECTORY}/struct_utils.shlib
+
+usage()
+{
+	cat <<EOF
+
+${SCRIPT_NAME}: 
+
+  This script demonstrates how to run Structural Preprocessing related applications 
+  available within the HCPprocessPipelines.simg Singularity container or within the
+  corresponding HCPprocessPipelinesSandbox on CCF subjects.
+
+Usage: ${SCRIPT_NAME} PARAMETER ...
+
+PARAMETERs are: [ ] = optional; < > = user supplied value
+
+  [--help] : show this usage information and exit
+
+  Path to gradient coefficients files
+  -----------------------------------
+
+  [--gradient-coeffs-dir=<path-to-gradient-coefficients-directory>]
+
+    The specified path will be bound (i.e. mounted) from your system
+    to a known location (/export/HCP/gradient_coefficient_files) in the
+    container or sandbox. This is where the gradient coefficients
+    files must be found within the container or sandbox.
+
+    This gradient coefficients files directory must contain the
+    proprietary gradient coefficients files for any scanners used in 
+    collecting your image data files.
+
+    If you do not specify a gradient coefficients files directory, it will
+    default to: ${DEFAULT_GRADIENT_COEFFS_DIR}.  
+
+    NOTE: The path to the gradient coefficients files is only necessary
+    for actual processing of data. If you are running a completion
+    check, you can allow this to take its default value even if that
+    value is incorrect.  
+
+  Path to FreeSurfer license file
+  -------------------------------
+
+  [--freesurfer-license-dir=<path-to-freesurfer-license-directory>]
+
+    The specified path will be bound (i.e. mounted) from your system
+    to a known location (/export/freesurfer_license) in the container
+    or sandbox. This is where the FreeSurfer license file must be
+    found within the container or sandbox.
+
+    If you do not specify a FreeSurfer license directory, it will 
+    default to: ${DEFAULT_FREESURFER_LICENSE_DIR}.
+
+    NOTE: The path to the FreeSurfer license file is only necessary
+    for actual processing of data. If you are running a completion
+    check, you can allow this to take its default value even if that
+    value is incorrect.  
+
+  Specification of environment
+  ----------------------------
+
+    You may specify whether to perform the requested processing
+    in the Singularity Container (HCPprocessPipelines.simg) or 
+    in the Singularity Sandbox (HCPprocessPipelinesSandbox/).
+
+    One of the following options may be specified:
+
+      --env=[CONTAINER|SANDBOX]
+      --container
+      --sandbox
+
+    The value specified for the --env= parameter is not case
+    sensitive, but must be either CONTAINER or SANDBOX. For example, 
+    --env=ConTAiner, --env=SandBox, and --env=sandbox
+    are all valid, but --env=CONTAIN is not valid.
+
+      --container is equivalent to --env=CONTAINER
+      --sandbox is equivalent to --env=SANDBOX
+
+    If no --env= option is specified, this script defaults to --env=${DEFAULT_ENV}.
+
+    NOTE: To run some apps, you will need sudo privileges
+    on the machine on which you are running. When commands are run
+    with sudo, you may be prompted for your password to validate 
+    your sudo privileges. 
+
+  Subject List File
+  -----------------
+
+    You must specify a file containing a list of subject information lines.
+
+    The --subject-list= option is used to specify the path to the subject file.
+
+    Each line in the subject file must contain the following information:
+
+      <study-dir>:<subject-id>:<positive-spin-echo-fieldmap-name>:<negative-spin-echo-fieldmap-name>
+
+    Anything after a # on a line is considered a comment. To comment out a subject
+    information line, simply insert a # as the very first character on the line
+
+    Each subject information line will be parsed and the container or sandbox will 
+    be used to run the specified processing for the specified subject.
+
+  Processing
+  ----------
+
+    This script can:
+
+      1. run the actual Structural Preprocessing for the specified subjects 
+      2. run the completion check for Structural Preprocessing for the specified subjects.
+      3. show the help provided by the container for Structural Preprocessing
+      4. remove the results of Structural Preprocessing for the specified subjects
+         (either prompting you for confirmation of files to delete first, or
+         with no prompting at all)
+
+    You specify which type of processing to perform using one of the following options:
+
+      --app=[PROCESS|CHECK|REMOVE_RESULTS|FORCE_REMOVE_RESULTS|PROCESSHELP]
+      --process
+      --check
+      --process-help
+      --remove-results        (prompts for confirmation)
+      --force-remove-results  (no prompting - dangerous)
+
+    The value specified for the --app= parameter is not case sensitive, but must be
+    one of the listed apps. For example, --app=Process, --app=PROCess, and 
+    --app=ChecK are all valid, but --app=PRO is not valid.
+
+      --process is equivalent to --app=PROCESS
+      --check is equivalent to --app=CHECK
+      --remove-results is equivalent to --app=REMOVE_RESULTS
+      --force-remove-results is equivalent to --app=FORCE_REMOVE_RESULTS
+      --process-help is equivalent to --app=PROCESSHELP
+
+    If no --app= option is specified, this script defaults to --app=${DEFAULT_APP}.
+
+EOF
+}
+
+get_options()
+{
+	local arguments=($@)
+	
+	# initialize global output variables
+	unset g_subject_list_file
+	g_gradient_coeffs_dir="${DEFAULT_GRADIENT_COEFFS_DIR}"
+	g_freesurfer_license_dir="${DEFAULT_FREESURFER_LICENSE_DIR}"
+	g_env="${DEFAULT_ENV}"
+	g_app="${DEFAULT_APP}"
+	
+	# parse arguments
+	local num_args=${#arguments[@]}
+	local argument
+	local index=0
+
+	while [ ${index} -lt ${num_args} ]; do
+		argument=${arguments[index]}
+
+		case ${argument} in
+			--help)
+				usage
+				exit 1
+				;;
+			--gradient-coeffs_dir=*)
+				g_gradient_coeffs_dir=${argument/*=/""}
+				index=$(( index + 1 ))
+				;;
+			--freesurfer-license-dir=*)
+				g_freesurfer_license_dir=${argument/*=/""}
+				index=$(( index + 1 ))
+				;;
+			--env=*)
+				g_env=${argument/*=/""}
+				g_env=$(echo ${g_env} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--container)
+				g_env="CONTAINER"
+				index=$(( index + 1 ))
+				;;
+			--sandbox)
+				g_env="SANDBOX"
+				index=$(( index + 1 ))
+				;;
+			--subject-list=*)
+				g_subject_list_file=${argument/*=/""}
+				index=$(( index + 1 ))
+				;;
+			--app=*)
+				g_app=${argument/*=/""}
+				g_app=$(echo ${g_app} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--process)
+				g_app="PROCESS"
+				index=$(( index + 1 ))
+				;;
+			--check)
+				g_app="CHECK"
+				index=$(( index + 1 ))
+				;;
+			--process-help)
+				g_app="PROCESSHELP"
+				index=$(( index + 1 ))
+				;;
+			--remove-results)
+				g_app="REMOVE_RESULTS"
+				index=$(( index + 1 ))
+				;;
+			--force-remove-results)
+				g_app="FORCE_REMOVE_RESULTS"
+				index=$(( index + 1 ))
+				;;
+			*)
+				abort "Unrecognized option: ${argument}"
+				;;
+		esac
+
+	done
+
+	# check parameters
+
+	if [ -n "${g_gradient_coeffs_dir}" ]; then
+		echo "INFO: gradient coefficients directory: ${g_gradient_coeffs_dir}"
+	else
+		abort "--gradient-coeffs-dir=<gradient-coeffs-directory> must be specified"
+	fi
+
+	if [ -n "${g_freesurfer_license_dir}" ]; then
+		echo "INFO: FreeSurfer license directory: ${g_freesurfer_license_dir}"
+	else
+		abort "--freesurfer-license-dir=<freesurfer-license-directory> must be specified"
+	fi
+	
+	if [ -z "${g_env}" ]; then
+		abort "environment (--env=[CONTAINER|SANDBOX], --container, or --sandbox) required"
+	fi
+
+	if [ "${g_env}" != "CONTAINER" -a "${g_env}" != "SANDBOX" ]; then 
+		abort "environment must be CONTAINER or SANDBOX"
+	else
+		echo "INFO: Environment: ${g_env}"
+	fi
+
+	if [ -z "${g_app}" ]; then
+		abort "app to run (--app=<value>, --process, --check, --process-help, --remove-results, --force-remove-results) required"
+	fi
+
+	if [ "${g_app}" != "PROCESS" \
+		 -a "${g_app}" != "CHECK" \
+		 -a "${g_app}" != "PROCESSHELP" \
+	     -a "${g_app}" != "REMOVE_RESULTS" \
+	     -a "${g_app}" != "FORCE_REMOVE_RESULTS" ]; then 
+		abort "Unrecognized app: ${g_app}"
+	fi
+
+	if [ -n "${g_subject_list_file}" ]; then
+		echo "INFO: running requested app, ${g_app}, for subjects listed in file: ${g_subject_list_file}"
+	else
+		if [ "${g_app}" != "PROCESSHELP" ]; then
+			abort "--subject-list=<subject-list-filename> must be specified"
+		fi
+	fi
+}
+
+main()
+{
+	local line
+	local study_dir
+	local subject_id
+	local pos_fieldmap
+	local neg_fieldmap
+	local run_cmd
+	local where_study_is_on_my_system
+	local where_study_must_be_in_container
+	local where_gc_files_are_on_my_system
+	local where_gc_files_must_be_in_container
+	local where_license_file_is_on_my_system
+	local where_license_file_must_be_in_container
+		
+	get_options "$@"
+
+	if [ "${g_app}" = "PROCESSHELP" ]; then
+
+		run_cmd=""
+		
+		if [ "${g_env}" = "CONTAINER" ]; then
+			# Note: If all applications are run from the CONTAINER, the sudo at the beginning
+			#       of this command is unnecessary. However, if you run some processing first
+			#       within the SANDBOX, in which the sudo is needed, then try to run some
+			#       subsequent processing from the CONTAINER, the processing run from the
+			#       SANDBOX will have left around files and directories owned by root and
+			#       the CONTAINER run (if run without the sudo) will not be able to delete
+			#       or update these files or directories.
+			run_cmd+="sudo singularity run --app StructuralPreprocessing HCPprocessPipelines.simg"
+		elif [ "${g_env}" = "SANDBOX" ]; then
+			run_cmd+="sudo singularity exec HCPprocessPipelinesSandbox/ /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+		else
+			abort "Unrecognized environment: ${g_env}"
+		fi
+
+		run_cmd+=" --help"
+
+		echo "run_cmd: ${run_cmd}"
+
+		time ${run_cmd}
+
+		exit
+	fi
+
+	
+	while read -r -u9 line; do
+
+		# remove comments - anything after a #
+		line=${line%%\#*}
+		
+		# trim leading and trailing whitespace
+		line=$(echo ${line} | xargs)
+		
+		if [ -z "${line}" ]; then
+			continue
+		fi
+			
+		# break into study_dir, subject_id, pos_fieldmap, and neg_fieldmap
+		study_dir=${line%%:*}			# study_dir is everything before the first ":"
+		line=${line#${study_dir}:}		# strip study_dir and : from the front of the line
+		
+		subject_id=${line%%:*}			# subject_id is everything before the first :
+		line=${line#${subject_id}:} 	# strip subject_id and : from the front of line
+		
+		pos_fieldmap=${line%%:*}		# pos_fieldmap is everything before the first :
+		line=${line#${pos_fieldmap}:}	# strip pos_fieldmap and : from the front of line
+		
+		neg_fieldmap=${line}			# neg_fieldmap is everything that is left
+
+		if [ "${g_app}" = "PROCESS" ]; then
+
+			echo ""
+			echo "-- Running processing for subject: "
+			echo "--     study directory: ${study_dir}"
+			echo "--          subject id: ${subject_id}"
+			echo "--   positive fieldmap: ${pos_fieldmap}"
+			echo "--   negative fieldmap: ${neg_fieldmap}"
+			echo ""
+			
+			run_cmd=""
+			
+			# Base Singularity command
+			if [ "${g_env}" = "CONTAINER" ]; then
+				# Note: If all applications are run from the CONTAINER, the sudo at the beginning
+				#       of this command is unnecessary. However, if you run some processing first
+				#       within the SANDBOX, in which the sudo is needed, then try to run some
+				#       subsequent processing from the CONTAINER, the processing run from the
+				#       SANDBOX will have left around files and directories owned by root and
+				#       the CONTAINER run (if run without the sudo) will not be able to delete
+				#       or update these files or directories.
+				run_cmd+="sudo singularity run"
+			elif [ "${g_env}" = "SANDBOX" ]; then
+				run_cmd+="sudo singularity exec"
+			else
+				abort "Unrecognized environment: ${g_env}"
+			fi
+			
+			# Bind your study directory
+			# Needs to show up as the /study directory in the Container/Sandbox
+			where_study_is_on_my_system="${study_dir}"
+			where_study_must_be_in_container="/study"
+			
+			run_cmd+=" -B ${where_study_is_on_my_system}:${where_study_must_be_in_container}"
+			
+			# Bind gradient coefficients files directory
+			# Needs to show up as the /export/HCP/gradient_coefficient_files directory in the Container/Sandbox
+			where_gc_files_are_on_my_system="${g_gradient_coeffs_dir}"
+			where_gc_files_must_be_in_container="/export/HCP/gradient_coefficient_files"
+			
+			run_cmd+=" -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container}"
+			
+			# Bind folder with FreeSurfer License
+			# Needs to show up as the /export/freesurfer_license directory in the Container/Sandbox
+			# Must contain a file named 'license.txt'
+			where_license_file_is_on_my_system="${g_freesurfer_license_dir}"
+			where_license_file_must_be_in_container="/export/freesurfer_license"
+			
+			run_cmd+=" -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container}"
+			
+			# Specify command or script to run
+			if [ "${g_env}" = "CONTAINER" ]; then
+				# application in the container to run
+				run_cmd+=" --app StructuralPreprocessing"
+				# container image file
+				run_cmd+=" HCPprocessPipelines.simg"
+			elif [ "${g_env}" = "SANDBOX" ]; then
+				# sandbox directory 
+				run_cmd+=" HCPprocessPipelinesSandbox/"
+				# full path to script within sandbox to execute
+				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS"
+			else
+				abort "Unrecognized environment: ${g_env}"
+			fi
+			
+			# Add command line parameters for command/script to run
+			run_cmd+=" --working-dir=/study" # Note: this path is from within the container
+			run_cmd+=" --subject=${subject_id}"
+			run_cmd+=" --classifier=V1_MR"
+			run_cmd+=" --brainsize=150"
+			
+			run_cmd+=" --first-t1w-directory-name=T1w_MPR_vNav_4e_RMS"
+			run_cmd+=" --first-t1w-file-name=${subject_id}_V1_MR_T1w_MPR_vNav_4e_RMS.nii.gz"
+			
+			run_cmd+=" --first-t2w-directory-name=T2w_SPC_vNav"
+			run_cmd+=" --first-t2w-file-name=${subject_id}_V1_MR_T2w_SPC_vNav.nii.gz"
+			
+			run_cmd+=" --t1template=MNI152_T1_0.8mm.nii.gz"
+			run_cmd+=" --t1templatebrain=MNI152_T1_0.8mm_brain.nii.gz"
+			run_cmd+=" --t1template2mm=MNI152_T1_2mm.nii.gz"
+			
+			run_cmd+=" --t2template=MNI152_T2_0.8mm.nii.gz"
+			run_cmd+=" --t2templatebrain=MNI152_T2_0.8mm_brain.nii.gz"
+			run_cmd+=" --t2template2mm=MNI152_T2_2mm.nii.gz"
+			
+			run_cmd+=" --templatemask=MNI152_T1_0.8mm_brain_mask.nii.gz"
+			run_cmd+=" --template2mmmask=MNI152_T1_2mm_brain_mask_dil.nii.gz"
+			
+			run_cmd+=" --fnirtconfig=T1_2_MNI152_2mm.cnf"
+			run_cmd+=" --gdcoeffs=Prisma_3T_coeff_AS82.grad"
+			run_cmd+=" --topupconfig=b02b0.cnf"
+			
+			run_cmd+=" --fieldmap-type=SpinEcho"
+			run_cmd+=" --se-phase-pos=${pos_fieldmap}"
+			run_cmd+=" --se-phase-neg=${neg_fieldmap}"
+			
+			echo "run_cmd: ${run_cmd}"
+			
+			time ${run_cmd}
+
+		elif [ "${g_app}" = "CHECK" ]; then
+
+			echo ""
+			echo "-- Checking completeness for subject: "
+			echo "--     study directory: ${study_dir}"
+			echo "--          subject id: ${subject_id}"
+			echo "--   positive fieldmap: ${pos_fieldmap}"
+			echo "--   negative fieldmap: ${neg_fieldmap}"
+			echo ""
+			
+			run_cmd=""
+			
+			# Base Singularity command
+			if [ "${g_env}" = "CONTAINER" ]; then
+				# Note: If all applications are run from the CONTAINER, the sudo at the beginning
+				#       of this command is unnecessary. However, if you run some processing first
+				#       within the SANDBOX, in which the sudo is needed, then try to run some
+				#       subsequent processing from the CONTAINER, the processing run from the
+				#       SANDBOX will have left around files and directories owned by root and
+				#       the CONTAINER run (if run without the sudo) will not be able to delete
+				#       or update these files or directories.
+				run_cmd+="sudo singularity run"
+			elif [ "${g_env}" = "SANDBOX" ]; then
+				run_cmd+="sudo singularity exec"
+			else
+				abort "Unrecognized environment: ${g_env}"
+			fi
+			
+			# Bind your data directory
+			# Needs to show up as the /data directory in the Container/Sandbox
+			where_study_is_on_my_system="${study_dir}"
+			where_study_must_be_in_container="/study"
+			
+			run_cmd+=" -B ${where_study_is_on_my_system}:${where_study_must_be_in_container}"
+			
+			# Specify command or script to run
+			if [ "${g_env}" = "CONTAINER" ]; then
+				# application in the container to run
+				run_cmd+=" --app StructuralPreprocessingCheckData"
+				# container image file
+				run_cmd+=" HCPprocessPipelines.simg"
+			elif [ "${g_env}" = "SANDBOX" ]; then
+				# sandbox directory 
+				run_cmd+=" HCPprocessPipelinesSandbox/"
+				# full path to script within sandbox to execute
+				run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/StructuralPreprocessing/StructuralPreprocessing.CHECK"
+			else
+				abort "Unrecognized environment: ${g_env}"
+			fi
+			
+			# Add command line parameters for command/script to run
+			run_cmd+=" --working-dir=/study"
+			run_cmd+=" --subject=${subject_id}"
+			run_cmd+=" --classifier=V1_MR"
+			
+			echo "run_cmd: ${run_cmd}"
+			
+			time ${run_cmd}
+
+		elif [ "${g_app}" = "REMOVE_RESULTS" ]; then
+
+			echo ""
+			echo "WARNING: Working on subject: ${subject_id}."
+			echo ""
+            echo "         Cleaning all files in the subject's data directory that are"
+			echo "         newer than the Structural Preprocessing start time marker  "
+			echo "         file. This means that Structural Preprocessing results and "
+			echo "         any results of processing subsequent to Structural         "
+			echo "         Preprocessing will be removed."
+			echo ""
+
+			if should_proceed; then
+				remove_ccf_struct_results "${study_dir}" "${subject_id}"
+			else
+				echo ""
+				echo "FILES NOT DELETED - RESULTS NOT REMOVED FOR SUBJECT: ${subject_id}"
+				echo ""
+			fi
+
+		elif [ "${g_app}" == "FORCE_REMOVE_RESULTS" ]; then
+
+			remove_ccf_struct_results "${study_dir}" "${subject_id}"
+			
+		else
+
+			abort "Unrecognized app: ${g_app}"
+			
+		fi
+			
+	done 9< "${g_subject_list_file}"
+}
+
+# Invoke the main function to get things started
+main "$@"
+

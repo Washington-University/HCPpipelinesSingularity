@@ -12,10 +12,10 @@ ${SCRIPT_NAME}:
   This script builds either the Singularity CONTAINER image (HCPprocessPipelines.simg) or 
   the Singularity SANDBOX directory (HCPprocessPipelinesSandbox).
 
-  The CONTAINER image can be built either from the RECIPE file (HCPprocessPipelines)
+  The CONTAINER image can be built either from the RECIPE file (HCPprocessPipelines.sdef)
   or from the SANDBOX directory (HCPprocessPipelinesSandbox) if it exists.
 
-  The SANDBOX directory can be built from the RECIPE file (HCPprocessPipelines)
+  The SANDBOX directory can be built from the RECIPE file (HCPprocessPipelines.sdef)
   or from the CONTAINER image (HCPprocessPipelines.simg) if it exists. 
 
 Usage: ${SCRIPT_NAME} PARAMETER ...
@@ -170,7 +170,7 @@ main()
 
 	if [ "${g_source}" = "RECIPE" ]; then
 
-		if [ -e "HCPprocessPipelines" ]; then
+		if [ -e "HCPprocessPipelines.sdef" ]; then
 
 			if [ "${g_target}" = "CONTAINER" ]; then
 
@@ -181,7 +181,7 @@ main()
 					rm HCPprocessPipelines.simg
 				fi
 				
-				time sudo singularity build HCPprocessPipelines.simg HCPprocessPipelines
+				time sudo singularity build HCPprocessPipelines.simg HCPprocessPipelines.sdef
 				
 			elif [ "${g_target}" = "SANDBOX" ]; then
 				
@@ -192,7 +192,7 @@ main()
 					sudo rm -rf HCPprocessPipelinesSandbox
 				fi
 				
-				time sudo singularity build --sandbox HCPprocessPipelinesSandbox/ HCPprocessPipelines
+				time sudo singularity build --sandbox HCPprocessPipelinesSandbox/ HCPprocessPipelines.sdef
 				
 			else
 				abort "Unrecognized target: ${g_target}"

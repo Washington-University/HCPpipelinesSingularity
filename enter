@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_NAME=$(basename "${0}")
-DEFAULT_STUDY_DIR="${HOME}/data/mystudy"
+DEFAULT_STUDY_DIR="${HOME}/data/LifeSpanAging"
 DEFAULT_GRADIENT_COEFFS_DIR="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
 DEFAULT_FREESURFER_LICENSE_DIR="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
 
@@ -206,6 +206,10 @@ main()
 	local where_license_file_is_on_my_system
 	local where_license_file_must_be_in_container
 
+	local where_nvidia_stuff_is_on_my_system=./mynvdriver
+	local where_nvidia_bin_must_be_in_container=/nvbin
+	local where_nvidia_lib_must_be_in_container=/nvlib
+
 	get_options "$@"
 
 	where_study_is_on_my_system="${g_study_dir}"
@@ -217,14 +221,14 @@ main()
 	where_license_file_is_on_my_system="${g_freesurfer_license_dir}"
 	where_license_file_must_be_in_container="/export/freesurfer_license"
 
-	shell_cmd=""
-	
 	if [ "${g_env}" = "CONTAINER" ]; then
 
 		sudo singularity shell \
 			 -B ${where_study_is_on_my_system}:${where_study_must_be_in_container} \
 			 -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container} \
 			 -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container} \
+			 -B ${where_nvidia_stuff_is_on_my_system}:${where_nvidia_lib_must_be_in_container} \
+			 -B ${where_nvidia_stuff_is_on_my_system}:${where_nvidia_bin_must_be_in_container} \
 			 HCPprocessPipelines.simg
 
 	elif [ "${g_env}" = "SANDBOX" ]; then
@@ -233,6 +237,8 @@ main()
 			 -B ${where_study_is_on_my_system}:${where_study_must_be_in_container} \
 			 -B ${where_gc_files_are_on_my_system}:${where_gc_files_must_be_in_container} \
 			 -B ${where_license_file_is_on_my_system}:${where_license_file_must_be_in_container} \
+			 -B ${where_nvidia_stuff_is_on_my_system}:${where_nvidia_lib_must_be_in_container} \
+			 -B ${where_nvidia_stuff_is_on_my_system}:${where_nvidia_bin_must_be_in_container} \
 			 HCPprocessPipelinesSandbox
 
 	else

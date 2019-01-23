@@ -1,0 +1,373 @@
+#!/bin/bash
+
+SCRIPT_NAME=$(basename "${0}")
+SCRIPT_DIRECTORY=$(dirname "${0}")
+#DEFAULT_GRADIENT_COEFFS_DIR="${HOME}/projects/HCPpipelinesPrereqs/gradient_coefficients_files"
+#DEFAULT_FREESURFER_LICENSE_DIR="${HOME}/projects/HCPpipelinesPrereqs/FreeSurferLicense"
+DEFAULT_APP="PROCESS"
+DEFAULT_ENV="CONTAINER"
+
+source ${SCRIPT_DIRECTORY}/user_utils.shlib
+source ${SCRIPT_DIRECTORY}/struct_utils.shlib
+
+usage()
+{
+	cat <<EOF
+
+${SCRIPT_NAME}: 
+
+  This script demonstrates how to run Diffusion Preprocessing related applications 
+  available within the HCPprocessPipelines.simg Singularity container or within the
+  corresponding HCPprocessPipelinesSandbox on CCF subjects that have been previously
+  run through Structural Preprocessing.
+
+Usage: ${SCRIPT_NAME} PARAMETER ...
+
+PARAMETERs are: [ ] = optional; < > = user supplied value
+
+  [--help] : show this usage information and exit
+
+#  Path to gradient coefficients files
+#  -----------------------------------
+#
+#  [--gradient-coeffs-dir=<path-to-gradient-coefficients-directory>]
+#
+#    The specified path will be bound (i.e. mounted) from your system
+#    to a known location (/export/HCP/gradient_coefficient_files) in the
+#    container or sandbox. This is where the gradient coefficients
+#    files must be found within the container or sandbox.
+#
+#    This gradient coefficients files directory must contain the
+#    proprietary gradient coefficients files for any scanners used in 
+#    collecting your image data files.
+#
+#    If you do not specify a gradient coefficients files directory, it will
+#    default to: ${DEFAULT_GRADIENT_COEFFS_DIR}.  
+#
+#    NOTE: The path to the gradient coefficients files is only necessary
+#    for actual processing of data. If you are running a completion
+#    check, you can allow this to take its default value even if that
+#    value is incorrect.  
+#
+#  Path to FreeSurfer license file
+#  -------------------------------
+#
+#  [--freesurfer-license-dir=<path-to-freesurfer-license-directory>]
+#
+#    The specified path will be bound (i.e. mounted) from your system
+#    to a known location (/export/freesurfer_license) in the container
+#    or sandbox. This is where the FreeSurfer license file must be
+#    found within the container or sandbox.
+#
+#    If you do not specify a FreeSurfer license directory, it will 
+#    default to: ${DEFAULT_FREESURFER_LICENSE_DIR}.
+#
+#    NOTE: The path to the FreeSurfer license file is only necessary
+#    for actual processing of data. If you are running a completion
+#    check, you can allow this to take its default value even if that
+#    value is incorrect.  
+
+  Specification of environment
+  ----------------------------
+
+    You may specify whether to perform the requested processing
+    in the Singularity Container (HCPprocessPipelines.simg) or 
+    in the Singularity Sandbox (HCPprocessPipelinesSandbox/).
+
+    One of the following options may be specified:
+
+      --env=[CONTAINER|SANDBOX]
+      --container
+      --sandbox
+
+    The value specified for the --env= parameter is not case
+    sensitive, but must be either CONTAINER or SANDBOX. For example, 
+    --env=ConTAiner, --env=SandBox, and --env=sandbox
+    are all valid, but --env=CONTAIN is not valid.
+
+      --container is equivalent to --env=CONTAINER
+      --sandbox is equivalent to --env=SANDBOX
+
+    If no --env= option is specified, this script defaults to --env=${DEFAULT_ENV}.
+
+    NOTE: To run some apps, you will need sudo privileges
+    on the machine on which you are running. When commands are run
+    with sudo, you may be prompted for your password to validate 
+    your sudo privileges. 
+
+  Subject List File
+  -----------------
+
+    You must specify a file containing a list of subject information lines.
+
+    The --subject-list= option is used to specify the path to the subject file.
+
+    Each line in the subject file must contain the following information:
+
+      <study-dir> <subject-id> <session-classifier>
+
+    None of the tokens in the above line can have any spaces in them.
+
+    Anything after a # on a line is considered a comment. To comment out a subject
+    information line, simply insert a # as the very first character on the line
+
+    Each subject information line will be parsed and the container or sandbox will 
+    be used to run the specified processing for the specified subject.
+
+  Processing
+  ----------
+
+    This script can:
+
+      1. run the actual Diffusion Preprocessing for the specified subjects 
+#      2. run the completion check for Diffusion Preprocessing for the specified subjects.
+#      3. show the help provided by the container for Diffusion Preprocessing
+#      4. remove the results of Structural Preprocessing for the specified subjects
+#         (either prompting you for confirmation of files to delete first, or
+#         with no prompting at all)
+
+    You specify which type of processing to perform using one of the following options:
+
+      --app=[PROCESS|CHECK|REMOVE_RESULTS|FORCE_REMOVE_RESULTS|PROCESSHELP]
+      --process
+      --check
+      --process-help
+      --remove-results        (prompts for confirmation)
+      --force-remove-results  (no prompting - dangerous)
+
+    The value specified for the --app= parameter is not case sensitive, but must be
+    one of the listed apps. For example, --app=Process, --app=PROCess, and 
+    --app=ChecK are all valid, but --app=PRO is not valid.
+
+      --process is equivalent to --app=PROCESS
+      --check is equivalent to --app=CHECK
+      --remove-results is equivalent to --app=REMOVE_RESULTS
+      --force-remove-results is equivalent to --app=FORCE_REMOVE_RESULTS
+      --process-help is equivalent to --app=PROCESSHELP
+
+    If no --app= option is specified, this script defaults to --app=${DEFAULT_APP}.
+
+EOF
+}
+
+get_options()
+{
+	local arguments=($@)
+	
+	# initialize global output variables
+	unset g_subject_list_file
+#	g_gradient_coeffs_dir="${DEFAULT_GRADIENT_COEFFS_DIR}"
+#	g_freesurfer_license_dir="${DEFAULT_FREESURFER_LICENSE_DIR}"
+	g_env="${DEFAULT_ENV}"
+	g_app="${DEFAULT_APP}"
+	
+	# parse arguments
+	local num_args=${#arguments[@]}
+	local argument
+	local index=0
+
+	while [ ${index} -lt ${num_args} ]; do
+		argument=${arguments[index]}
+
+		case ${argument} in
+			--help)
+				usage
+				exit 1
+				;;
+			# --gradient-coeffs_dir=*)
+			# 	g_gradient_coeffs_dir=${argument/*=/""}
+			# 	index=$(( index + 1 ))
+			# 	;;
+			# --freesurfer-license-dir=*)
+			# 	g_freesurfer_license_dir=${argument/*=/""}
+			# 	index=$(( index + 1 ))
+			# 	;;
+			--env=*)
+				g_env=${argument/*=/""}
+				g_env=$(echo ${g_env} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--container)
+				g_env="CONTAINER"
+				index=$(( index + 1 ))
+				;;
+			--sandbox)
+				g_env="SANDBOX"
+				index=$(( index + 1 ))
+				;;
+			--subject-list=*)
+				g_subject_list_file=${argument/*=/""}
+				index=$(( index + 1 ))
+				;;
+			--app=*)
+				g_app=${argument/*=/""}
+				g_app=$(echo ${g_app} | tr '[:lower:]' '[:upper:]')
+				index=$(( index + 1 ))
+				;;
+			--process)
+				g_app="PROCESS"
+				index=$(( index + 1 ))
+				;;
+			# --check)
+			# 	g_app="CHECK"
+			# 	index=$(( index + 1 ))
+			# 	;;
+			# --process-help)
+			# 	g_app="PROCESSHELP"
+			# 	index=$(( index + 1 ))
+			# 	;;
+			# --remove-results)
+			# 	g_app="REMOVE_RESULTS"
+			# 	index=$(( index + 1 ))
+			# 	;;
+			# --force-remove-results)
+			# 	g_app="FORCE_REMOVE_RESULTS"
+			# 	index=$(( index + 1 ))
+			# 	;;
+			*)
+				abort "Unrecognized option: ${argument}"
+				;;
+		esac
+
+	done
+
+	# check parameters
+
+	# if [ -n "${g_gradient_coeffs_dir}" ]; then
+	# 	echo "INFO: gradient coefficients directory: ${g_gradient_coeffs_dir}"
+	# else
+	# 	abort "--gradient-coeffs-dir=<gradient-coeffs-directory> must be specified"
+	# fi
+
+	# if [ -n "${g_freesurfer_license_dir}" ]; then
+	# 	echo "INFO: FreeSurfer license directory: ${g_freesurfer_license_dir}"
+	# else
+	# 	abort "--freesurfer-license-dir=<freesurfer-license-directory> must be specified"
+	# fi
+	
+	if [ -z "${g_env}" ]; then
+		abort "environment (--env=[CONTAINER|SANDBOX], --container, or --sandbox) required"
+	fi
+
+	if [ "${g_env}" != "CONTAINER" -a "${g_env}" != "SANDBOX" ]; then 
+		abort "environment must be CONTAINER or SANDBOX"
+	else
+		echo "INFO: Environment: ${g_env}"
+	fi
+
+	if [ -z "${g_app}" ]; then
+		abort "app to run (--app=<value>, --process, --check, --process-help, --remove-results, --force-remove-results) required"
+	fi
+
+	if [ "${g_app}" != "PROCESS" \
+		 -a "${g_app}" != "CHECK" \
+		 -a "${g_app}" != "PROCESSHELP" \
+	     -a "${g_app}" != "REMOVE_RESULTS" \
+	     -a "${g_app}" != "FORCE_REMOVE_RESULTS" ]; then 
+		abort "Unrecognized app: ${g_app}"
+	fi
+
+	if [ -n "${g_subject_list_file}" ]; then
+		echo "INFO: running requested app, ${g_app}, for subjects listed in file: ${g_subject_list_file}"
+	else
+		if [ "${g_app}" != "PROCESSHELP" ]; then
+			abort "--subject-list=<subject-list-filename> must be specified"
+		fi
+	fi
+}
+
+main()
+{
+	local line
+	local study_dir
+	local subject_id
+	local classifier
+
+	local run_cmd
+	local where_study_is_on_my_system
+	local where_study_must_be_in_container
+
+	local where_nvidia_stuff_is_on_my_system=./mynvdriver
+	local where_nvidia_bin_must_be_in_container=/nvbin
+	local where_nvidia_lib_must_be_in_container=/nvlib
+	
+	get_options "$@"
+
+	while read -r -u9 line; do
+
+		# remove comments - anything after a #
+		line=${line%%\#*}
+		
+		# trim leading and trailing whitespace
+		line=$(echo ${line} | xargs)
+		
+		if [ -z "${line}" ]; then
+			continue
+		fi
+			
+		# break into study_dir, subject_id, session classifer
+
+		array_from_line=(${line//:/ })
+		array_from_line=(${line})
+		study_dir=${array_from_line[0]}
+		subject_id=${array_from_line[1]}
+		classifier=${array_from_line[2]}
+
+		# build the run command
+
+		# basic sigularity command
+		run_cmd="sudo singularity exec"
+
+		# Bind your study directory
+		# Needs to show up as the /study directory in the Container/Sandbox
+		where_study_is_on_my_system="${study_dir}"
+		where_study_must_be_in_container="/study"
+
+		run_cmd+=" -B ${where_study_is_on_my_system}:${where_study_must_be_in_container}"
+
+		# Bind the nvidia directories
+		run_cmd+=" -B ${where_nvidia_stuff_is_on_my_system}:${where_nvidia_lib_must_be_in_container}"
+		run_cmd+=" -B ${where_nvidia_stuff_is_on_my_system}:${where_nvidia_bin_must_be_in_container}"
+
+		# Specify running in the sandbox or container
+		if [ "${g_env}" = "CONTAINER" ]; then
+			run_cmd+=" HCPprocessPipelines.simg"
+		elif [ "${g_env}" = "SANDBOX" ]; then
+			run_cmd+=" HCPprocessPipelinesSandbox/"
+		else
+			abort "Unrecognized environment: ${g_env}"
+		fi
+
+		# Specify script to run based on requested processing
+		if [ "${g_app}" = "PROCESS" ]; then
+			echo ""
+			echo "-- Running processing for subject: "
+			echo "--     study directory: ${study_dir}"
+			echo "--          subject id: ${subject_id}"
+			echo "--  session classifier: ${classifier}"
+			echo ""
+
+			run_cmd+=" /pipeline_tools/HCPpipelinesRunUtils/DiffusionPreprocessing/DiffusionPreprocessingWrapper.sh"
+
+			# Add command line parameters for command/script to run
+			run_cmd+=" --working-dir=/study" # Note: this path is from within the container
+			run_cmd+=" --subject=${subject_id}"
+			run_cmd+=" --classifier=${classifier}"
+			
+		else
+
+			abort "Unrecognized app: ${g_app}"
+		fi
+
+		# run the command
+
+		echo "run_cmd: ${run_cmd}"
+		
+		time ${run_cmd}
+
+	done 9< "${g_subject_list_file}"
+}
+
+# Invoke the main function to get things started
+main "$@"
+

@@ -1,0 +1,1843 @@
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ ls
+branch.txt  ccf_diffusion   ccf_structural  extractnvdriver.sh  HCPprocessPipelinesSandbox  HCPprocessPipelines.simg  LICENSE.md   README.md     struct_utils.shlib  user_utils.shlib
+build       ccf_functional  enter           func_utils.shlib    HCPprocessPipelines.sdef    hcp_struct                product.txt  show_version  subjects            version.txt
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ chmod +x extractnvdriver.sh 
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ nvidia-smi
+Wed Jan 16 15:19:41 2019       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 384.130                Driver Version: 384.130                   |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce GTX 1080    Off  | 00000000:17:00.0 Off |                  N/A |
+|  0%   47C    P8     6W / 180W |      1MiB /  8114MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+|   1  GeForce GT 1030     Off  | 00000000:65:00.0  On |                  N/A |
+| 46%   49C    P0   ERR! /  30W |    861MiB /  1991MiB |      1%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|    1      1099      G   /usr/lib/xorg/Xorg                           417MiB |
+|    1      2447      G   compiz                                       286MiB |
+|    1     22896      G   /opt/enpass/Enpass                            13MiB |
+|    1     23558      G   ...uest-channel-token=17216541468966782289   141MiB |
++-----------------------------------------------------------------------------+
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ ./extractnvdriver.sh 384.130 mynvdriver
+Driver installer file NVIDIA-Linux-x86_64-384.130.run not found
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ ls
+branch.txt     ccf_functional  extractnvdriver.sh          HCPprocessPipelines.sdef  LICENSE.md                      README.md           subjects
+build          ccf_structural  func_utils.shlib            HCPprocessPipelines.simg  NVIDIA-Linux-x86_64-410.93.run  show_version        user_utils.shlib
+ccf_diffusion  enter           HCPprocessPipelinesSandbox  hcp_struct                product.txt                     struct_utils.shlib  version.txt
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ ls
+branch.txt     ccf_functional  extractnvdriver.sh          HCPprocessPipelines.sdef  LICENSE.md                       product.txt   struct_utils.shlib  version.txt
+build          ccf_structural  func_utils.shlib            HCPprocessPipelines.simg  NVIDIA-Linux-x86_64-384.130.run  README.md     subjects
+ccf_diffusion  enter           HCPprocessPipelinesSandbox  hcp_struct                NVIDIA-Linux-x86_64-410.93.run   show_version  user_utils.shlib
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ ./extractnvdriver.sh 384.130 mynvdriver
+Created directory at mynvdriver
+Creating directory NVIDIA-Linux-x86_64-384.130
+Verifying archive integrity... OK
+Uncompressing NVIDIA Accelerated Graphics Driver for Linux-x86_64 384.130..................................................................................................................................
+...........................................................................................................................................................................................................
+.............................................................................................................................................................                                             
+Extracted driver
+Successfully installed to mynvdriver
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ ls
+branch.txt     ccf_functional  extractnvdriver.sh          HCPprocessPipelines.sdef  LICENSE.md                   NVIDIA-Linux-x86_64-384.130.run  README.md           subjects
+build          ccf_structural  func_utils.shlib            HCPprocessPipelines.simg  mynvdriver                   NVIDIA-Linux-x86_64-410.93.run   show_version        user_utils.shlib
+ccf_diffusion  enter           HCPprocessPipelinesSandbox  hcp_struct                NVIDIA-Linux-x86_64-384.130  product.txt                      struct_utils.shlib  version.txt
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ cd mynvdriver
+[tbb@leopardws01 ...inesSingularity/mynvdriver(feature/freesurfer_v6_latest)]$ ls
+10_nvidia.json                  libGLESv2_nvidia.so.384.130     libnvidia-encode.so.384.130           libOpenGL.so.0                                         nvidia-modprobe
+10_nvidia_wayland.json          libGLESv2.so.2.1.0              libnvidia-fatbinaryloader.so.384.130  libvdpau_nvidia.so                                     nvidia-modprobe.1.gz
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ ls
+branch.txt     ccf_functional  extractnvdriver.sh          HCPprocessPipelines.sdef  LICENSE.md                   NVIDIA-Linux-x86_64-384.130.run  show_version        user_utils.shlib
+build          ccf_structural  func_utils.shlib            HCPprocessPipelines.simg  mynvdriver                   product.txt                      struct_utils.shlib  version.txt
+ccf_diffusion  enter           HCPprocessPipelinesSandbox  hcp_struct                NVIDIA-Linux-x86_64-384.130  README.md                        subjects
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ ./enter --sandbox --study-dir=/home/tbb/data/LifeSpanAging                                                                  
+INFO: study directory: /home/tbb/data/LifeSpanAging
+INFO: gradient coefficients directory: /home/tbb/projects/HCPpipelinesPrereqs/gradient_coefficients_files
+INFO: FreeSurfer license directory: /home/tbb/projects/HCPpipelinesPrereqs/FreeSurferLicense
+INFO: Environment: SANDBOX
+[sudo] password for tbb: 
+Singularity: Invoking an interactive shell within container...
+
+-------- freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0-2beb96c --------
+Setting up environment for FreeSurfer/FS-FAST (and FSL)
+FREESURFER_HOME   /export/freesurfer-6.0
+FSFAST_HOME       /export/freesurfer-6.0/fsfast
+FSF_OUTPUT_FORMAT nii.gz
+SUBJECTS_DIR      /export/freesurfer-6.0/subjects
+MNI_DIR           /export/freesurfer-6.0/mni
+FSL_DIR           /export/fsl-6.0.0
+Singularity HCPprocessPipelinesSandbox:~> nvidia-smi
+Wed Jan 16 15:39:36 2019       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 384.130                Driver Version: 384.130                   |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce GTX 1080    Off  | 00000000:17:00.0 Off |                  N/A |
+|  0%   47C    P8     7W / 180W |      1MiB /  8114MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+|   1  GeForce GT 1030     Off  | 00000000:65:00.0  On |                  N/A |
+| 46%   46C    P8   ERR! /  30W |    859MiB /  1991MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|    1      1099      G   /usr/lib/xorg/Xorg                           417MiB |
+|    1      2447      G   compiz                                       286MiB |
+|    1     22896      G   /opt/enpass/Enpass                            13MiB |
+|    1     23558      G   ...uest-channel-token=17216541468966782289   140MiB |
++-----------------------------------------------------------------------------+
+Singularity HCPprocessPipelinesSandbox:~> exit
+exit
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ deploy2sandbox                                                                                                              
+Run utils sync command
+
+sudo rsync -avz --exclude .git /home/tbb/projects/HCPpipelinesRunUtils/DiffusionPreprocessing /home/tbb/projects/HCPpipelinesRunUtils/FunctionalPreprocessing /home/tbb/projects/HCPpipelinesRunUtils/lib /
+home/tbb/projects/HCPpipelinesRunUtils/product.txt /home/tbb/projects/HCPpipelinesRunUtils/README.md /home/tbb/projects/HCPpipelinesRunUtils/shlib /home/tbb/projects/HCPpipelinesRunUtils/show_version /ho
+me/tbb/projects/HCPpipelinesRunUtils/StructuralPreprocessing /home/tbb/projects/HCPpipelinesRunUtils/ToolSetupScripts /home/tbb/projects/HCPpipelinesRunUtils/version.txt /home/tbb/projects/HCPpipelinesSi
+ngularity/HCPprocessPipelinesSandbox/pipeline_tools/HCPpipelinesRunUtils                                                                                                                                  
+sending incremental file list
+README.md
+product.txt
+show_version
+version.txt
+DiffusionPreprocessing/
+DiffusionPreprocessing/CheckDiffusionPreprocessingCompletionBatch
+DiffusionPreprocessing/DiffusionPreprocessingWrapper.sh
+DiffusionPreprocessing/DiffusionPreprocessingWrapper.sh~
+FunctionalPreprocessing/
+FunctionalPreprocessing/ExpectedOutputFiles.CCF.txt
+FunctionalPreprocessing/FunctionalPreprocessing.CHECK
+FunctionalPreprocessing/FunctionalPreprocessing.SINGULARITY_PROCESS
+StructuralPreprocessing/
+StructuralPreprocessing/ExpectedOutputFiles.CCF.txt
+StructuralPreprocessing/StructuralPreprocessing.CHECK
+StructuralPreprocessing/StructuralPreprocessing.SINGULARITY_PROCESS
+StructuralPreprocessing/Testing/
+StructuralPreprocessing/Testing/CompareStudySurfaces.sh
+StructuralPreprocessing/Testing/CompareSubjectSurfaces.sh
+ToolSetupScripts/
+ToolSetupScripts/epd-python_setup.sh
+lib/
+lib/.gitignore
+lib/README.md
+lib/ccf/
+lib/ccf/one_subject_completion_checker.py
+lib/ccf/subject.py
+lib/ccf/diffusion_preprocessing/
+lib/ccf/diffusion_preprocessing/one_subject_completion_checker
+lib/ccf/diffusion_preprocessing/one_subject_completion_checker.py
+lib/ccf/functional_preprocessing/
+lib/ccf/functional_preprocessing/one_subject_completion_checker
+lib/ccf/functional_preprocessing/one_subject_completion_checker.py
+lib/ccf/structural_preprocessing/
+lib/ccf/structural_preprocessing/one_subject_completion_checker
+lib/ccf/structural_preprocessing/one_subject_completion_checker.py
+lib/utils/
+lib/utils/dict_utils.py
+lib/utils/dict_utils.py~
+lib/utils/file_utils.py
+lib/utils/get_json_meta_data.py
+lib/utils/get_json_meta_data.sh
+lib/utils/my_argparse.py
+lib/utils/os_utils.py
+lib/utils/str_utils.py
+shlib/
+shlib/log.shlib
+shlib/utils.shlib
+
+sent 45,620 bytes  received 760 bytes  92,760.00 bytes/sec
+total size is 193,495  speedup is 4.17
+
+Pipelines sync command
+
+sudo rsync -avz --exclude .git /home/tbb/projects/HCPpipelines/ApplyHandReClassifications /home/tbb/projects/HCPpipelines/bedpostx /home/tbb/projects/HCPpipelines/branch.txt /home/tbb/projects/HCPpipelin
+es/DeDriftAndResample /home/tbb/projects/HCPpipelines/DiffusionPreprocessing /home/tbb/projects/HCPpipelines/Examples /home/tbb/projects/HCPpipelines/fMRISurface /home/tbb/projects/HCPpipelines/fMRIVolum
+e /home/tbb/projects/HCPpipelines/FreeSurfer /home/tbb/projects/HCPpipelines/FreeSurferCustomizations /home/tbb/projects/HCPpipelines/GenerateSpinEchoBiasFieldPrereqs /home/tbb/projects/HCPpipelines/glob
+al /home/tbb/projects/HCPpipelines/ICAFIX /home/tbb/projects/HCPpipelines/LICENSE.md /home/tbb/projects/HCPpipelines/MSMAll /home/tbb/projects/HCPpipelines/MSMConfig /home/tbb/projects/HCPpipelines/MSMRe
+moveGroupDrift /home/tbb/projects/HCPpipelines/PostFix /home/tbb/projects/HCPpipelines/PostFreeSurfer /home/tbb/projects/HCPpipelines/PreFreeSurfer /home/tbb/projects/HCPpipelines/product.txt /home/tbb/p
+rojects/HCPpipelines/README.md /home/tbb/projects/HCPpipelines/ReApplyFix /home/tbb/projects/HCPpipelines/ReApplyFixMultiRun /home/tbb/projects/HCPpipelines/RestingStateStats /home/tbb/projects/HCPpipeli
+nes/show_version /home/tbb/projects/HCPpipelines/Supplemental /home/tbb/projects/HCPpipelines/TaskfMRIAnalysis /home/tbb/projects/HCPpipelines/version.txt /home/tbb/projects/HCPpipelinesSingularity/HCPpr
+ocessPipelinesSandbox/export/HCP/Pipelines                                                                                                                                                                
+sending incremental file list
+LICENSE.md
+README.md
+branch.txt
+product.txt
+show_version
+version.txt
+ApplyHandReClassifications/
+ApplyHandReClassifications/ApplyHandReClassifications.sh
+ApplyHandReClassifications/MergeEditClassifications.m
+ApplyHandReClassifications/MergeEditClassifications.prj
+ApplyHandReClassifications/MergeEditClassifications/
+ApplyHandReClassifications/MergeEditClassifications/distrib/
+ApplyHandReClassifications/MergeEditClassifications/distrib/MergeEditClassifications
+ApplyHandReClassifications/MergeEditClassifications/distrib/readme.txt
+ApplyHandReClassifications/MergeEditClassifications/distrib/run_MergeEditClassifications.sh
+ApplyHandReClassifications/MergeEditClassifications/src/
+ApplyHandReClassifications/MergeEditClassifications/src/MergeEditClassifications
+ApplyHandReClassifications/MergeEditClassifications/src/mccExcludedFiles.log
+ApplyHandReClassifications/MergeEditClassifications/src/readme.txt
+ApplyHandReClassifications/MergeEditClassifications/src/run_MergeEditClassifications.sh
+DeDriftAndResample/
+DeDriftAndResample/DeDriftAndResamplePipeline.sh
+DiffusionPreprocessing/
+DiffusionPreprocessing/DiffPreprocPipeline.sh
+DiffusionPreprocessing/DiffPreprocPipeline_Eddy.sh
+DiffusionPreprocessing/DiffPreprocPipeline_PostEddy.sh
+DiffusionPreprocessing/DiffPreprocPipeline_PreEddy.sh
+DiffusionPreprocessing/scripts/
+DiffusionPreprocessing/scripts/DiffusionToStructural.sh
+DiffusionPreprocessing/scripts/basic_preproc.sh
+DiffusionPreprocessing/scripts/eddy_postproc.sh
+DiffusionPreprocessing/scripts/run_eddy.sh
+DiffusionPreprocessing/scripts/run_topup.sh
+Examples/
+Examples/Scripts/
+Examples/Scripts/ApplyHandReClassificationsBatch.sh
+Examples/Scripts/DeDriftAndResamplePipelineBatch.sh
+Examples/Scripts/DiffusionPreprocessingBatch.sh
+Examples/Scripts/FreeSurferPipelineBatch.sh
+Examples/Scripts/GenericfMRISurfaceProcessingPipelineBatch.sh
+Examples/Scripts/GenericfMRIVolumeProcessingPipelineBatch.sh
+Examples/Scripts/IcaFixProcessingBatch.sh
+Examples/Scripts/MSMAllPipelineBatch.sh
+Examples/Scripts/MakeAverageDatasetBatch.sh
+Examples/Scripts/PostFixBatch.sh
+Examples/Scripts/PostFreeSurferPipelineBatch.sh
+Examples/Scripts/PreFreeSurferPipelineBatch.sh
+Examples/Scripts/SetUpHCPPipeline.sh
+Examples/Scripts/TaskfMRIAnalysisBatch.sh
+Examples/Scripts/copy_evs_into_results.sh
+Examples/Scripts/generate_level1_fsf.sh
+Examples/Scripts/3T_Size_Checking/
+Examples/Scripts/3T_Size_Checking/DiffusionPreprocessingBatch.3T_Size_Checking.sh
+Examples/Scripts/3T_Size_Checking/FreeSurferPipelineBatch.3T_Size_Checking.sh
+Examples/Scripts/3T_Size_Checking/GenericfMRISurfaceProcessingPipelineBatch.3T_Size_Checking.sh
+Examples/Scripts/3T_Size_Checking/GenericfMRIVolumeProcessingPipelineBatch.3T_Size_Checking.sh
+Examples/Scripts/3T_Size_Checking/IcaFixProcessingBatch.3T_Size_Checking.sh
+Examples/Scripts/3T_Size_Checking/PostFreeSurferPipelineBatch.3T_Size_Checking.sh
+Examples/Scripts/3T_Size_Checking/PreFreeSurferPipelineBatch.3T_Size_Checking.sh
+Examples/Scripts/3T_Size_Checking/PrepareForTaskAnalysis.sh
+Examples/Scripts/3T_Size_Checking/TaskfMRIAnalysisBatch.3T_Size_Checking.sh
+Examples/Scripts/7T/
+Examples/Scripts/7T/DiffusionPreprocessingBatch.7T.sh
+Examples/Scripts/7T/GenericfMRISurfaceProcessingPipelineBatch.7T.sh
+Examples/Scripts/7T/GenericfMRISurfaceProcessingPipelineBatch.7T_1res.sh
+Examples/Scripts/7T/GenericfMRIVolumeProcessingPipelineBatch.7T.sh
+Examples/Scripts/7T/IcaFixProcessingBatch.7T.sh
+Examples/Scripts/7T/PostFreeSurferPipelineBatch.7T_1res.sh
+Examples/fsf_templates/
+Examples/fsf_templates/tfMRI_EMOTION_LR_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_EMOTION_RL_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_EMOTION_hp200_s4_level2.fsf
+Examples/fsf_templates/tfMRI_GAMBLING_LR_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_GAMBLING_RL_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_GAMBLING_hp200_s4_level2.fsf
+Examples/fsf_templates/tfMRI_LANGUAGE_LR_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_LANGUAGE_RL_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_LANGUAGE_hp200_s4_level2.fsf
+Examples/fsf_templates/tfMRI_MOTOR_LR_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_MOTOR_RL_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_MOTOR_hp200_s4_level2.fsf
+Examples/fsf_templates/tfMRI_RELATIONAL_LR_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_RELATIONAL_RL_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_RELATIONAL_hp200_s4_level2.fsf
+Examples/fsf_templates/tfMRI_SOCIAL_LR_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_SOCIAL_RL_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_SOCIAL_hp200_s4_level2.fsf
+Examples/fsf_templates/tfMRI_WM_LR_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_WM_RL_hp200_s4_level1.fsf
+Examples/fsf_templates/tfMRI_WM_hp200_s4_level2.fsf
+FreeSurfer/
+FreeSurfer/FreeSurferPipeline.sh
+FreeSurfer/scripts/
+FreeSurfer/scripts/FreeSurferHiresPial.sh
+FreeSurfer/scripts/FreeSurferHiresWhite.sh
+FreeSurferCustomizations/
+FreeSurferCustomizations/README
+FreeSurferCustomizations/conf2hires
+FreeSurferCustomizations/longmc
+FreeSurferCustomizations/recon-all.v6.hires
+GenerateSpinEchoBiasFieldPrereqs/
+GenerateSpinEchoBiasFieldPrereqs/GenerateSpinEchoBiasFieldPrereqs.sh
+ICAFIX/
+ICAFIX/Feta.m
+ICAFIX/README.md
+ICAFIX/demean.m
+ICAFIX/functionhighpassandvariancenormalize.m
+ICAFIX/hcp_fix
+ICAFIX/hcp_fix_multi_run
+ICAFIX/iFeta.m
+ICAFIX/icaDim.m
+ICAFIX/nets_svds.m
+ICAFIX/pca_dim.m
+ICAFIX/settings.sh.WUSTL_CHPC2
+MSMAll/
+MSMAll/MSMAllPipeline.sh
+MSMAll/scripts/
+MSMAll/scripts/Compile_MATLAB_code.sh
+MSMAll/scripts/ComputeVN.m
+MSMAll/scripts/MSMAll.sh
+MSMAll/scripts/MSMregression.m
+MSMAll/scripts/SingleSubjectConcat.sh
+MSMAll/scripts/ss_svds.m
+MSMAll/scripts/Compiled_ComputeVN/
+MSMAll/scripts/Compiled_ComputeVN/ComputeVN
+MSMAll/scripts/Compiled_ComputeVN/mccExcludedFiles.log
+MSMAll/scripts/Compiled_ComputeVN/readme.txt
+MSMAll/scripts/Compiled_ComputeVN/requiredMCRProducts.txt
+MSMAll/scripts/Compiled_ComputeVN/run_ComputeVN.sh
+MSMAll/scripts/Compiled_MSMregression/
+MSMAll/scripts/Compiled_MSMregression/MSMregression
+MSMAll/scripts/Compiled_MSMregression/mccExcludedFiles.log
+MSMAll/scripts/Compiled_MSMregression/readme.txt
+MSMAll/scripts/Compiled_MSMregression/requiredMCRProducts.txt
+MSMAll/scripts/Compiled_MSMregression/run_MSMregression.sh
+MSMConfig/
+MSMConfig/MSMAllStrainFinalconf1to1_1to3_1
+MSMConfig/MSMAllStrainFinalconf1to1_1to3_2
+MSMConfig/MSMSulcStrainFinalconf
+MSMRemoveGroupDrift/
+MSMRemoveGroupDrift/MSMRemoveGroupDrift.sh
+PostFix/
+PostFix/Compile_MATLAB_code.sh
+PostFix/DetectNonMatching.m
+PostFix/PostFix.sh
+PostFix/README.md
+PostFix/prepareICAs.m
+PostFix/Compiled_prepareICAs/
+PostFix/Compiled_prepareICAs/mccExcludedFiles.log
+PostFix/Compiled_prepareICAs/prepareICAs
+PostFix/Compiled_prepareICAs/readme.txt
+PostFix/Compiled_prepareICAs/requiredMCRProducts.txt
+PostFix/Compiled_prepareICAs/run_prepareICAs.sh
+PostFix/PostFixScenes/
+PostFix/PostFixScenes/ICA_Classification_DualScreenTemplate.scene
+PostFix/PostFixScenes/ICA_Classification_SingleScreenTemplate.scene
+PostFreeSurfer/
+PostFreeSurfer/PostFreeSurferPipeline.sh
+PostFreeSurfer/PostFreeSurferPipeline_1res.sh
+PostFreeSurfer/scripts/
+PostFreeSurfer/scripts/CreateMyelinMaps.sh
+PostFreeSurfer/scripts/CreateMyelinMaps_1res.sh
+PostFreeSurfer/scripts/CreateRibbon.sh
+PostFreeSurfer/scripts/Example_1res_inflate.sh
+PostFreeSurfer/scripts/FreeSurfer2CaretConvertAndRegisterNonlinear.sh
+PostFreeSurfer/scripts/FreeSurfer2CaretConvertAndRegisterNonlinear_1res.sh
+PreFreeSurfer/
+PreFreeSurfer/PreFreeSurferPipeline.sh
+PreFreeSurfer/scripts/
+PreFreeSurfer/scripts/ACPCAlignment.sh
+PreFreeSurfer/scripts/AnatomicalAverage.sh
+PreFreeSurfer/scripts/AtlasRegistrationToMNI152_FLIRTandFNIRT.sh
+PreFreeSurfer/scripts/BiasFieldCorrection_sqrtT1wXT1w.sh
+PreFreeSurfer/scripts/BrainExtraction_FNIRTbased.sh
+PreFreeSurfer/scripts/T2wToT1wDistortionCorrectAndReg.sh
+PreFreeSurfer/scripts/T2wToT1wReg.sh
+ReApplyFix/
+ReApplyFix/ReApplyFixPipeline.sh
+ReApplyFix/scripts/
+ReApplyFix/scripts/Compile_MATLAB_code.sh
+ReApplyFix/scripts/Compiled_fix_3_clean/
+ReApplyFix/scripts/Compiled_fix_3_clean/fix_3_clean
+ReApplyFix/scripts/Compiled_fix_3_clean/mccExcludedFiles.log
+ReApplyFix/scripts/Compiled_fix_3_clean/readme.txt
+ReApplyFix/scripts/Compiled_fix_3_clean/requiredMCRProducts.txt
+ReApplyFix/scripts/Compiled_fix_3_clean/run_fix_3_clean.sh
+ReApplyFixMultiRun/
+ReApplyFixMultiRun/ReApplyFixMultiRunPipeline.sh
+RestingStateStats/
+RestingStateStats/RestingStateStats.bat
+RestingStateStats/RestingStateStats.m
+RestingStateStats/RestingStateStats.prj
+RestingStateStats/RestingStateStats.sh
+RestingStateStats/Compiled_RestingStateStats/
+RestingStateStats/Compiled_RestingStateStats/distrib/
+RestingStateStats/Compiled_RestingStateStats/distrib/RestingStateStats
+RestingStateStats/Compiled_RestingStateStats/distrib/readme.txt
+RestingStateStats/Compiled_RestingStateStats/distrib/run_RestingStateStats.sh
+RestingStateStats/Compiled_RestingStateStats/src/
+RestingStateStats/Compiled_RestingStateStats/src/RestingStateStats
+RestingStateStats/Compiled_RestingStateStats/src/mccExcludedFiles.log
+RestingStateStats/Compiled_RestingStateStats/src/readme.txt
+RestingStateStats/Compiled_RestingStateStats/src/run_RestingStateStats.sh
+Supplemental/
+Supplemental/MakeAverageDataset/
+Supplemental/MakeAverageDataset/MakeAverageDataset.sh
+TaskfMRIAnalysis/
+TaskfMRIAnalysis/README.md
+TaskfMRIAnalysis/TaskfMRIAnalysis.sh
+TaskfMRIAnalysis/scripts/
+TaskfMRIAnalysis/scripts/TaskfMRILevel1.sh
+TaskfMRIAnalysis/scripts/TaskfMRILevel2.sh
+bedpostx/
+bedpostx/README.md
+bedpostx/bedpostx_gpu
+fMRISurface/
+fMRISurface/GenericfMRISurfaceProcessingPipeline.sh
+fMRISurface/GenericfMRISurfaceProcessingPipeline_1res.sh
+fMRISurface/scripts/
+fMRISurface/scripts/CreateDenseTimeseries.sh
+fMRISurface/scripts/RibbonVolumeToSurfaceMapping.sh
+fMRISurface/scripts/RibbonVolumeToSurfaceMapping_1res.sh
+fMRISurface/scripts/SubcorticalProcessing.sh
+fMRISurface/scripts/SurfaceSmoothing.sh
+fMRIVolume/
+fMRIVolume/GenericfMRIVolumeProcessingPipeline.sh
+fMRIVolume/scripts/
+fMRIVolume/scripts/ComputeSpinEchoBiasField.sh
+fMRIVolume/scripts/DistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased.sh
+fMRIVolume/scripts/IntensityNormalization.sh
+fMRIVolume/scripts/MotionCorrection.sh
+fMRIVolume/scripts/OneStepResampling.sh
+global/
+global/config/
+global/config/3TPrisma_coeff_AS82_trunc.grad
+global/config/CMRR_3TPrisma_coeff_AS82_trunc.grad
+global/config/FreeSurferAllLut.txt
+global/config/FreeSurferCSFRegLut.txt
+global/config/FreeSurferCorticalLabelTableLut.txt
+global/config/FreeSurferSubcorticalLabelTableLut.txt
+global/config/FreeSurferWMRegLut.txt
+global/config/LeftCerebralFreeSurferTrajectoryLabelTableLut.txt
+global/config/Prisma_3T_coeff_AS82.grad
+global/config/RightCerebralFreeSurferTrajectoryLabelTableLut.txt
+global/config/T1_2_MNI152_2mm.cnf
+global/config/WholeBrainFreeSurferTrajectoryLabelTableLut.txt
+global/config/b02b0.cnf
+global/config/coeff_SC72C_Skyra.grad
+global/config/trunc.CMRR_7TAS_coeff_SC72CD.grad
+global/fsl/
+global/fsl/etc/
+global/fsl/etc/matlab/
+global/fsl/etc/matlab/README.md
+global/fsl/etc/matlab/call_fsl.m
+global/fsl/etc/matlab/cleanup_read_avw_img_slice.m
+global/fsl/etc/matlab/prepare_read_avw_img_slice.m
+global/fsl/etc/matlab/read_avw.m
+global/fsl/etc/matlab/read_avw_complex.m
+global/fsl/etc/matlab/read_avw_hdr.m
+global/fsl/etc/matlab/read_avw_img.m
+global/fsl/etc/matlab/read_avw_img_slice.m
+global/fsl/etc/matlab/read_pulse.m
+global/fsl/etc/matlab/save_avw.m
+global/fsl/etc/matlab/save_avw_complex.m
+global/fsl/etc/matlab/save_avw_hdr.m
+global/fsl/etc/matlab/save_avw_img.m
+global/fsl/etc/matlab/write_pulse.m
+global/matlab/
+global/matlab/ciftiopen.m
+global/matlab/ciftisave.m
+global/matlab/ciftisavereset.m
+global/matlab/demean.m
+global/matlab/normalise.m
+global/matlab/gifti-1.5/
+global/matlab/gifti-1.5/GPL
+global/matlab/gifti-1.5/LICENCE
+global/matlab/gifti-1.5/README
+global/matlab/gifti-1.5/@gifti/
+global/matlab/gifti-1.5/@gifti/Contents.m
+global/matlab/gifti-1.5/@gifti/display.m
+global/matlab/gifti-1.5/@gifti/export.m
+global/matlab/gifti-1.5/@gifti/fieldnames.m
+global/matlab/gifti-1.5/@gifti/gifti.m
+global/matlab/gifti-1.5/@gifti/isfield.m
+global/matlab/gifti-1.5/@gifti/plot.m
+global/matlab/gifti-1.5/@gifti/save.m
+global/matlab/gifti-1.5/@gifti/struct.m
+global/matlab/gifti-1.5/@gifti/subsasgn.m
+global/matlab/gifti-1.5/@gifti/subsref.m
+global/matlab/gifti-1.5/@gifti/private/
+global/matlab/gifti-1.5/@gifti/private/Makefile
+global/matlab/gifti-1.5/@gifti/private/Makefile.var
+global/matlab/gifti-1.5/@gifti/private/base64decode.m
+global/matlab/gifti-1.5/@gifti/private/base64encode.m
+global/matlab/gifti-1.5/@gifti/private/getdict.m
+global/matlab/gifti-1.5/@gifti/private/isintent.m
+global/matlab/gifti-1.5/@gifti/private/miniz.c
+global/matlab/gifti-1.5/@gifti/private/read_freesurfer_file.m
+global/matlab/gifti-1.5/@gifti/private/read_gifti_file_standalone.m
+global/matlab/gifti-1.5/@gifti/private/xml_parser.m
+global/matlab/gifti-1.5/@gifti/private/zstream.c
+global/matlab/gifti-1.5/@gifti/private/zstream.m
+global/matlab/gifti-1.6/
+global/matlab/gifti-1.6/GPL
+global/matlab/gifti-1.6/LICENCE
+global/matlab/gifti-1.6/README
+global/matlab/gifti-1.6/@gifti/
+global/matlab/gifti-1.6/@gifti/Contents.m
+global/matlab/gifti-1.6/@gifti/display.m
+global/matlab/gifti-1.6/@gifti/export.m
+global/matlab/gifti-1.6/@gifti/fieldnames.m
+global/matlab/gifti-1.6/@gifti/gifti.m
+global/matlab/gifti-1.6/@gifti/isfield.m
+global/matlab/gifti-1.6/@gifti/plot.m
+global/matlab/gifti-1.6/@gifti/save.m
+global/matlab/gifti-1.6/@gifti/saveas.m
+global/matlab/gifti-1.6/@gifti/struct.m
+global/matlab/gifti-1.6/@gifti/subsasgn.m
+global/matlab/gifti-1.6/@gifti/subsref.m
+global/matlab/gifti-1.6/@gifti/private/
+global/matlab/gifti-1.6/@gifti/private/Makefile
+global/matlab/gifti-1.6/@gifti/private/Makefile.var
+global/matlab/gifti-1.6/@gifti/private/base64decode.m
+global/matlab/gifti-1.6/@gifti/private/base64encode.m
+global/matlab/gifti-1.6/@gifti/private/getdict.m
+global/matlab/gifti-1.6/@gifti/private/isintent.m
+global/matlab/gifti-1.6/@gifti/private/miniz.c
+global/matlab/gifti-1.6/@gifti/private/mvtk_write.m
+global/matlab/gifti-1.6/@gifti/private/read_freesurfer_file.m
+global/matlab/gifti-1.6/@gifti/private/read_gifti_file_standalone.m
+global/matlab/gifti-1.6/@gifti/private/xml_parser.m
+global/matlab/gifti-1.6/@gifti/private/zstream.c
+global/matlab/gifti-1.6/@gifti/private/zstream.m
+global/scripts/
+global/scripts/GeneralElectricFieldMapPreprocessingAll.sh
+global/scripts/GradientDistortionUnwarp.sh
+global/scripts/Rotate_bvecs.sh
+global/scripts/SiemensFieldMapPreprocessingAll.sh
+global/scripts/TopupPreprocessingAll.sh
+global/scripts/aff2rigid.py
+global/scripts/average_bvecs.py
+global/scripts/epi_reg_dof
+global/scripts/fsl_version.shlib
+global/scripts/log.shlib
+global/scripts/mcflirt.sh
+global/scripts/mcflirt_acc.sh
+global/scripts/mtrendout.awk
+global/scripts/opts.shlib
+global/scripts/version.shlib
+global/templates/
+global/templates/MNI152_T1_0.7mm.nii.gz
+global/templates/MNI152_T1_0.7mm_brain.nii.gz
+global/templates/MNI152_T1_0.7mm_brain_mask.nii.gz
+global/templates/MNI152_T1_0.8mm.nii.gz
+global/templates/MNI152_T1_0.8mm_brain.nii.gz
+global/templates/MNI152_T1_0.8mm_brain_mask.nii.gz
+global/templates/MNI152_T1_1mm.nii.gz
+global/templates/MNI152_T1_1mm_brain.nii.gz
+global/templates/MNI152_T1_1mm_brain_mask.nii.gz
+global/templates/MNI152_T1_2mm.nii.gz
+global/templates/MNI152_T1_2mm_brain_mask_dil.nii.gz
+global/templates/MNI152_T2_0.7mm.nii.gz
+global/templates/MNI152_T2_0.7mm_brain.nii.gz
+global/templates/MNI152_T2_0.8mm.nii.gz
+global/templates/MNI152_T2_0.8mm_brain.nii.gz
+global/templates/MNI152_T2_1mm.nii.gz
+global/templates/MNI152_T2_1mm_brain.nii.gz
+global/templates/MNI152_T2_2mm.nii.gz
+global/templates/170494_Greyordinates/
+global/templates/170494_Greyordinates/170494_Greyordinates.dscalar.nii
+global/templates/170494_Greyordinates/Atlas_ROIs.1.60.nii.gz
+global/templates/170494_Greyordinates/L.atlasroi.59k_fs_LR.shape.gii
+global/templates/170494_Greyordinates/R.atlasroi.59k_fs_LR.shape.gii
+global/templates/91282_Greyordinates/
+global/templates/91282_Greyordinates/91282_Greyordinates.dscalar.nii
+global/templates/91282_Greyordinates/Atlas_ROIs.2.nii.gz
+global/templates/91282_Greyordinates/L.atlasroi.32k_fs_LR.shape.gii
+global/templates/91282_Greyordinates/R.atlasroi.32k_fs_LR.shape.gii
+global/templates/MSMAll/
+global/templates/MSMAll/DeDriftingGroup.L.sphere.DeDriftMSMAll.164k_fs_LR.surf.gii
+global/templates/MSMAll/DeDriftingGroup.R.sphere.DeDriftMSMAll.164k_fs_LR.surf.gii
+global/templates/MSMAll/Q1-Q6_RelatedParcellation210.MyelinMap_BC_MSMAll_2_d41_WRN_DeDrift.32k_fs_LR.dscalar.nii
+global/templates/MSMAll/Q1-Q6_RelatedParcellation210.MyelinMap_BC_MSMAll_2_d41_WRN_DeDrift.59k_fs_LR.dscalar.nii
+global/templates/MSMAll/Q1-Q6_RelatedParcellation210.atlas_Topographic_ROIs.32k_fs_LR.dscalar.nii
+global/templates/MSMAll/Q1-Q6_RelatedParcellation210.atlas_Topography.32k_fs_LR.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d10_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d10_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d11_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d11_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d12_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d12_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d137_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d137_ROW_vn/Weights.txt
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d137_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d13_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d13_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d14_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d14_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d15_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d15_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d16_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d16_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d17_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d17_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d18_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d18_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d19_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d19_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d20_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d20_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d21_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d21_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d40_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d40_ROW_vn/Weights.txt
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d40_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d7_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d7_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d8_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d8_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d9_ROW_vn/
+global/templates/MSMAll/rfMRI_REST_Atlas_MSMAll_2_d41_WRN_DeDrift_hp2000_clean_PCA.ica_d9_ROW_vn/melodic_oIC.dscalar.nii
+global/templates/standard_mesh_atlases/
+global/templates/standard_mesh_atlases/00_README.txt
+global/templates/standard_mesh_atlases/Atlas_ROIs.1.60.nii.gz
+global/templates/standard_mesh_atlases/Atlas_ROIs.2.nii.gz
+global/templates/standard_mesh_atlases/Avgwmparc.nii.gz
+global/templates/standard_mesh_atlases/Conte69.MyelinMap_BC.164k_fs_LR.dscalar.nii
+global/templates/standard_mesh_atlases/L.atlasroi.164k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/L.atlasroi.32k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/L.atlasroi.59k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/L.refsulc.164k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/L.sphere.32k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/L.sphere.59k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/MSMSulc.refsulc.164k_fs_LR.dscalar.nii
+global/templates/standard_mesh_atlases/R.atlasroi.164k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/R.atlasroi.32k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/R.atlasroi.59k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/R.refsulc.164k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/R.sphere.32k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/R.sphere.59k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/colin.cerebral.L.flat.164k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/colin.cerebral.L.flat.32k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/colin.cerebral.L.flat.59k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/colin.cerebral.R.flat.164k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/colin.cerebral.R.flat.32k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/colin.cerebral.R.flat.59k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/fsaverage.L_LR.spherical_std.164k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/fsaverage.R_LR.spherical_std.164k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/fs_L/
+global/templates/standard_mesh_atlases/fs_L/fs_L-to-fs_LR_fsaverage.L_LR.spherical_std.164k_fs_L.surf.gii
+global/templates/standard_mesh_atlases/fs_L/fsaverage.L.sphere.164k_fs_L.surf.gii
+global/templates/standard_mesh_atlases/fs_R/
+global/templates/standard_mesh_atlases/fs_R/fs_R-to-fs_LR_fsaverage.R_LR.spherical_std.164k_fs_R.surf.gii
+global/templates/standard_mesh_atlases/fs_R/fsaverage.R.sphere.164k_fs_R.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR-deformed_to-fsaverage.L.sphere.164k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR-deformed_to-fsaverage.L.sphere.32k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR-deformed_to-fsaverage.L.sphere.59k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR-deformed_to-fsaverage.R.sphere.164k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR-deformed_to-fsaverage.R.sphere.32k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR-deformed_to-fsaverage.R.sphere.59k_fs_LR.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR.L.midthickness_va_avg.164k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR.L.midthickness_va_avg.32k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR.L.midthickness_va_avg.59k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR.R.midthickness_va_avg.164k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR.R.midthickness_va_avg.32k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fs_LR.R.midthickness_va_avg.59k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage.L.midthickness_va_avg.164k_fsavg_L.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage.R.midthickness_va_avg.164k_fsavg_R.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage4.L.midthickness_va_avg.3k_fsavg_L.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage4.R.midthickness_va_avg.3k_fsavg_R.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage4_std_sphere.L.3k_fsavg_L.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage4_std_sphere.R.3k_fsavg_R.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage5.L.midthickness_va_avg.10k_fsavg_L.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage5.R.midthickness_va_avg.10k_fsavg_R.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage5_std_sphere.L.10k_fsavg_L.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage5_std_sphere.R.10k_fsavg_R.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage6.L.midthickness_va_avg.41k_fsavg_L.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage6.R.midthickness_va_avg.41k_fsavg_R.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage6_std_sphere.L.41k_fsavg_L.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage6_std_sphere.R.41k_fsavg_R.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage_std_sphere.L.164k_fsavg_L.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/fsaverage_std_sphere.R.164k_fsavg_R.surf.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/misc/
+global/templates/standard_mesh_atlases/resample_fsaverage/misc/fix_fs_LR.L.midthickness_va_avg.164k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/misc/fix_fs_LR.L.midthickness_va_avg.32k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/misc/fix_fs_LR.L.midthickness_va_avg.59k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/misc/fix_fs_LR.R.midthickness_va_avg.164k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/misc/fix_fs_LR.R.midthickness_va_avg.32k_fs_LR.shape.gii
+global/templates/standard_mesh_atlases/resample_fsaverage/misc/fix_fs_LR.R.midthickness_va_avg.59k_fs_LR.shape.gii
+Singularity HCPprocessPipelinesSandbox:~> ls
+Downloads  matlab  testdisk.log
+Singularity HCPprocessPipelinesSandbox:~> cd ..
+Singularity HCPprocessPipelinesSandbox:/> exit
+exit
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ ls
+branch.txt     ccf_functional  extractnvdriver.sh          HCPprocessPipelines.sdef  LICENSE.md                   NVIDIA-Linux-x86_64-384.130.run  show_version        user_utils.shlib
+build          ccf_structural  func_utils.shlib            HCPprocessPipelines.simg  mynvdriver                   product.txt                      struct_utils.shlib  version.txt
+ccf_diffusion  enter           HCPprocessPipelinesSandbox  hcp_struct                NVIDIA-Linux-x86_64-384.130  README.md                        subjects
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ ./ccf_diffusion --subject-list=subjects/ccf.LifeSpanAging.diffusion.subjectlist --env=SANDBOX                               
+INFO: Environment: SANDBOX
+INFO: running requested app, PROCESS, for subjects listed in file: subjects/ccf.LifeSpanAging.diffusion.subjectlist
+
+-- Running processing for subject: 
+--     study directory: /home/tbb/data/LifeSpanAging
+--          subject id: HCA6002236
+--  session classifier: V1_MR
+
+run_cmd: sudo singularity exec -B /home/tbb/data/LifeSpanAging:/study -B ./mynvdriver:/nvlib -B ./mynvdriver:/nvbin HCPprocessPipelinesSandbox/ /pipeline_tools/HCPpipelinesRunUtils/DiffusionPreprocessing
+/DiffusionPreprocessingWrapper.sh --working-dir=/study --subject=HCA6002236 --classifier=V1_MR                                                                                                            
+-------- freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0-2beb96c --------
+Setting up environment for FreeSurfer/FS-FAST (and FSL)
+FREESURFER_HOME   /export/freesurfer-6.0
+FSFAST_HOME       /export/freesurfer-6.0/fsfast
+FSF_OUTPUT_FORMAT nii.gz
+SUBJECTS_DIR      /export/freesurfer-6.0/subjects
+MNI_DIR           /export/freesurfer-6.0/mni
+FSL_DIR           /export/fsl-6.0.0
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - HCP_RUN_UTILS: /pipeline_tools/HCPpipelinesRunUtils
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - Job started on leopardws01 at Wed Jan 16 15:41:28 CST 2019
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - ----- Platform Information: Begin -----
+Linux leopardws01 4.15.0-43-generic #46~16.04.1-Ubuntu SMP Fri Dec 7 13:31:08 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - ----- Platform Information: End -----
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - subject: HCA6002236
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - working directory: /study
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - classifier: V1_MR
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - Checking/Creating processing information directory: /study/HCA6002236/ProcessingInfo
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - Checking/Creating processing information directory: /study/HCA6002236/ProcessingInfo
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - Creating a start time file
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - Removing old /study/HCA6002236/ProcessingInfo/HCA6002236.V1_MR.DiffusionPreprocessing.starttime
+Wed Jan 16 15:41:28 CST 2019 - DiffusionPreprocessingWrapper.sh - Sleep for 1 minute before creating start time file.
+Wed Jan 16 15:42:28 CST 2019 - DiffusionPreprocessingWrapper.sh - Creating start time file: /study/HCA6002236/ProcessingInfo/HCA6002236.V1_MR.DiffusionPreprocessing.starttime
+-rw-r--r-- 1 root root 29 Jan 16 15:42 /study/HCA6002236/ProcessingInfo/HCA6002236.V1_MR.DiffusionPreprocessing.starttime
+Wed Jan 16 15:42:28 CST 2019 - DiffusionPreprocessingWrapper.sh - Sleep for 1 minute after creating start time file.
+Wed Jan 16 15:43:28 CST 2019 - DiffusionPreprocessingWrapper.sh - Determined phase_encoding_dir: PAAP
+Wed Jan 16 15:43:30 CST 2019 - DiffusionPreprocessingWrapper.sh - effective_echo_spacing_secs: 0.000689998
+Wed Jan 16 15:43:30 CST 2019 - DiffusionPreprocessingWrapper.sh - g_effective_echo_spacing_msecs: 0.689998000000
+Wed Jan 16 15:43:30 CST 2019 - DiffusionPreprocessingWrapper.sh - 
+Wed Jan 16 15:43:30 CST 2019 - DiffusionPreprocessingWrapper.sh - PreEddy_cmd: /export/HCP/Pipelines/DiffusionPreprocessing/DiffPreprocPipeline_PreEddy.sh --path=/study --subject=HCA6002236 --PEdir=2 --p
+osData=/study/HCA6002236/unprocessed/V1_MR/Diffusion/HCA6002236_V1_MR_dMRI_dir98_PA.nii.gz@/study/HCA6002236/unprocessed/V1_MR/Diffusion/HCA6002236_V1_MR_dMRI_dir99_PA.nii.gz --negData=/study/HCA6002236/
+unprocessed/V1_MR/Diffusion/HCA6002236_V1_MR_dMRI_dir98_AP.nii.gz@/study/HCA6002236/unprocessed/V1_MR/Diffusion/HCA6002236_V1_MR_dMRI_dir99_AP.nii.gz --echospacing=0.689998000000                        
+Wed Jan 16 15:43:30 CST 2019 - DiffusionPreprocessingWrapper.sh - 
+-- DiffPreprocPipeline_PreEddy.sh: Specified Command-Line Parameters - Start --
+   StudyFolder: /study
+   Subject: HCA6002236
+   PEdir: 2
+   PosInputImages: /study/HCA6002236/unprocessed/V1_MR/Diffusion/HCA6002236_V1_MR_dMRI_dir98_PA.nii.gz@/study/HCA6002236/unprocessed/V1_MR/Diffusion/HCA6002236_V1_MR_dMRI_dir99_PA.nii.gz
+   NegInputImages: /study/HCA6002236/unprocessed/V1_MR/Diffusion/HCA6002236_V1_MR_dMRI_dir98_AP.nii.gz@/study/HCA6002236/unprocessed/V1_MR/Diffusion/HCA6002236_V1_MR_dMRI_dir99_AP.nii.gz
+   echospacing: 0.689998000000
+   DWIName: Diffusion
+   b0maxbval: 50
+   runcmd: 
+-- DiffPreprocPipeline_PreEddy.sh: Specified Command-Line Parameters - End --
+-- DiffPreprocPipeline_PreEddy.sh: Environment Variables Used - Start --
+   HCPPIPEDIR_dMRI: /export/HCP/Pipelines/DiffusionPreprocessing/scripts
+   FSLDIR: /export/fsl-6.0.0
+-- DiffPreprocPipeline_PreEddy.sh: Environment Variables Used - End --
+Wed Jan 16 15:43:30 CST 2019:DiffPreprocPipeline_PreEddy.sh: outdir: /study/HCA6002236/Diffusion
+Wed Jan 16 15:43:30 CST 2019:DiffPreprocPipeline_PreEddy.sh: basePos: Pos
+Wed Jan 16 15:43:30 CST 2019:DiffPreprocPipeline_PreEddy.sh: baseNeg: Neg
+Wed Jan 16 15:43:30 CST 2019:DiffPreprocPipeline_PreEddy.sh: Copying positive raw data to working directory
+Wed Jan 16 15:43:30 CST 2019:DiffPreprocPipeline_PreEddy.sh: PosInputImages: /study/HCA6002236/unprocessed/V1_MR/Diffusion/HCA6002236_V1_MR_dMRI_dir98_PA.nii.gz /study/HCA6002236/unprocessed/V1_MR/Diffus
+ion/HCA6002236_V1_MR_dMRI_dir99_PA.nii.gz                                                                                                                                                                 
+Wed Jan 16 15:43:32 CST 2019:DiffPreprocPipeline_PreEddy.sh: Copying negative raw data to working directory
+Wed Jan 16 15:43:32 CST 2019:DiffPreprocPipeline_PreEddy.sh: NegInputImages: /study/HCA6002236/unprocessed/V1_MR/Diffusion/HCA6002236_V1_MR_dMRI_dir98_AP.nii.gz /study/HCA6002236/unprocessed/V1_MR/Diffus
+ion/HCA6002236_V1_MR_dMRI_dir99_AP.nii.gz                                                                                                                                                                 
+Wed Jan 16 15:43:33 CST 2019:DiffPreprocPipeline_PreEddy.sh: Create two files for each phase encoding direction
+Wed Jan 16 15:43:33 CST 2019:DiffPreprocPipeline_PreEddy.sh: Running Basic Preprocessing
+
+ START: basic_preproc.sh
+basic_preproc.sh: Input Parameter: workingdir: /study/HCA6002236/Diffusion
+basic_preproc.sh: Input Parameter: echo_spacing: 0.689998000000
+basic_preproc.sh: Input Parameter: PEdir: 2
+basic_preproc.sh: Input Parameter: b0dist: 45
+basic_preproc.sh: Input Parameter: b0maxbval: 50
+basic_preproc.sh: Total readout time is .095909 secs
+basic_preproc.sh: Rescaling series to ensure consistency across baseline intensities
+basic_preproc.sh: Processing /study/HCA6002236/Diffusion/rawdata/Pos_1
+basic_preproc.sh: About to fslmaths /study/HCA6002236/Diffusion/rawdata/Pos_1.nii.gz -Xmean -Ymean -Zmean /study/HCA6002236/Diffusion/rawdata/Pos_1_mean
+basic_preproc.sh: Getting Posbvals from /study/HCA6002236/Diffusion/rawdata/Pos_1.bval
+basic_preproc.sh: Posbvals: 5 5 1490 2990 1495 3005 1505 2985 1500 3005 1490 2995 1495 2990 1500 2985 1505 5 3005 1490 3000 1495 3000 1495 3000 1490 2980 1505 2990 1495 3000 1490 3000 5 1505 3000 1490 29
+80 1495 3000 1500 2995 1505 2990 1495 3000 1495 3000 1485 5 3005 1495 2995 1505 2995 1490 2990 1490 3000 1500 3000 1505 2985 1500 2990 5 1505 3005 1495 3005 1505 3010 1500 3005 1490 2990 1495 2995 1500 3
+000 1490 5 2990 1500 2985 1495 2995 1495 2990 1490 2980 1500 2995 1495 3005 1500 2990 1500 3000                                                                                                           
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0000
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_1_mean /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0000 0 1
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0001
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_1_mean /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0001 1 1
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0002
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0003
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0004
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0005
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0006
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0007
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0008
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0009
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0010
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0011
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0012
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0013
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0014
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0015
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0016
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0017
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_1_mean /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0017 17 1
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0018
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0019
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0020
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0021
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0022
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0023
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0024
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0025
+basic_preproc.sh: Posbvals i: 2980
+basic_preproc.sh: cnt: 0026
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0027
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0028
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0029
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0030
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0031
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0032
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0033
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_1_mean /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0033 33 1
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0034
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0035
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0036
+basic_preproc.sh: Posbvals i: 2980
+basic_preproc.sh: cnt: 0037
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0038
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0039
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0040
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0041
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0042
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0043
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0044
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0045
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0046
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0047
+basic_preproc.sh: Posbvals i: 1485
+basic_preproc.sh: cnt: 0048
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0049
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_1_mean /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0049 49 1
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0050
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0051
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0052
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0053
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0054
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0055
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0056
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0057
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0058
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0059
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0060
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0061
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0062
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0063
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0064
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0065
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_1_mean /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0065 65 1
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0066
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0067
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0068
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0069
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0070
+basic_preproc.sh: Posbvals i: 3010
+basic_preproc.sh: cnt: 0071
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0072
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0073
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0074
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0075
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0076
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0077
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0078
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0079
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0080
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0081
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_1_mean /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0081 81 1
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0082
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0083
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0084
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0085
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0086
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0087
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0088
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0089
+basic_preproc.sh: Posbvals i: 2980
+basic_preproc.sh: cnt: 0090
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0091
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0092
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0093
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0094
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0095
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0096
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0097
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0098
+basic_preproc.sh: About to fslmerge -t /study/HCA6002236/Diffusion/rawdata/Pos_1_mean /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0000.nii.gz /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0001.nii.gz /st
+udy/HCA6002236/Diffusion/rawdata/Pos_1_b0_0017.nii.gz /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0033.nii.gz /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0049.nii.gz /study/HCA6002236/Diffusion/rawdata
+/Pos_1_b0_0065.nii.gz /study/HCA6002236/Diffusion/rawdata/Pos_1_b0_0081.nii.gz                                                                                                                            
+basic_preproc.sh: About to fslmaths /study/HCA6002236/Diffusion/rawdata/Pos_1_mean -Tmean /study/HCA6002236/Diffusion/rawdata/Pos_1_mean
+basic_preproc.sh: Processing /study/HCA6002236/Diffusion/rawdata/Pos_2
+basic_preproc.sh: About to fslmaths /study/HCA6002236/Diffusion/rawdata/Pos_2.nii.gz -Xmean -Ymean -Zmean /study/HCA6002236/Diffusion/rawdata/Pos_2_mean
+basic_preproc.sh: Getting Posbvals from /study/HCA6002236/Diffusion/rawdata/Pos_2.bval
+basic_preproc.sh: Posbvals: 5 5 1500 2985 1495 2995 1495 2995 1490 2985 1490 3005 1500 2990 1500 2995 1490 5 2990 1500 2985 1500 3000 1505 2990 1500 2990 1505 2985 1490 3005 1495 2985 5 1495 3000 1500 29
+90 1495 3005 1505 2990 1505 3005 1490 2980 1495 2990 1505 5 2995 1495 2980 1495 2995 1495 3000 1500 2985 1505 3000 1505 2985 1495 2985 5 1490 3000 1500 3010 1490 2990 1500 2990 1495 3000 1500 2990 1495 3
+000 1495 5 2985 1495 3000 1510 2995 1495 2990 1500 3005 1505 2995 1500 2985 1505 2985 1505 2985 1505                                                                                                      
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0000
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_2_mean /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0000 0 1
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0001
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_2_mean /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0001 1 1
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0002
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0003
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0004
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0005
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0006
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0007
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0008
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0009
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0010
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0011
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0012
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0013
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0014
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0015
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0016
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0017
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_2_mean /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0017 17 1
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0018
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0019
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0020
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0021
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0022
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0023
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0024
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0025
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0026
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0027
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0028
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0029
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0030
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0031
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0032
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0033
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_2_mean /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0033 33 1
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0034
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0035
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0036
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0037
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0038
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0039
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0040
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0041
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0042
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0043
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0044
+basic_preproc.sh: Posbvals i: 2980
+basic_preproc.sh: cnt: 0045
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0046
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0047
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0048
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0049
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_2_mean /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0049 49 1
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0050
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0051
+basic_preproc.sh: Posbvals i: 2980
+basic_preproc.sh: cnt: 0052
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0053
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0054
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0055
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0056
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0057
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0058
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0059
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0060
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0061
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0062
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0063
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0064
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0065
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_2_mean /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0065 65 1
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0066
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0067
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0068
+basic_preproc.sh: Posbvals i: 3010
+basic_preproc.sh: cnt: 0069
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0070
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0071
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0072
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0073
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0074
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0075
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0076
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0077
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0078
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0079
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0080
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0081
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Pos_2_mean /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0081 81 1
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0082
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0083
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0084
+basic_preproc.sh: Posbvals i: 1510
+basic_preproc.sh: cnt: 0085
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0086
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0087
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0088
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0089
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0090
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0091
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0092
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0093
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0094
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0095
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0096
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0097
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0098
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0099
+basic_preproc.sh: About to fslmerge -t /study/HCA6002236/Diffusion/rawdata/Pos_2_mean /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0000.nii.gz /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0001.nii.gz /st
+udy/HCA6002236/Diffusion/rawdata/Pos_2_b0_0017.nii.gz /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0033.nii.gz /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0049.nii.gz /study/HCA6002236/Diffusion/rawdata
+/Pos_2_b0_0065.nii.gz /study/HCA6002236/Diffusion/rawdata/Pos_2_b0_0081.nii.gz                                                                                                                            
+basic_preproc.sh: About to fslmaths /study/HCA6002236/Diffusion/rawdata/Pos_2_mean -Tmean /study/HCA6002236/Diffusion/rawdata/Pos_2_mean
+basic_preproc.sh: Processing /study/HCA6002236/Diffusion/rawdata/Neg_1
+basic_preproc.sh: About to fslmaths /study/HCA6002236/Diffusion/rawdata/Neg_1.nii.gz -Xmean -Ymean -Zmean /study/HCA6002236/Diffusion/rawdata/Neg_1_mean
+basic_preproc.sh: Getting Posbvals from /study/HCA6002236/Diffusion/rawdata/Neg_1.bval
+basic_preproc.sh: Posbvals: 5 5 1490 2990 1495 3005 1505 2985 1500 3005 1490 2995 1495 2990 1500 2985 1505 5 3005 1490 3000 1495 3000 1495 3000 1490 2980 1505 2990 1495 3000 1490 3000 5 1505 3000 1490 29
+80 1495 3000 1500 2995 1505 2990 1495 3000 1495 3000 1485 5 3005 1495 2995 1505 2995 1490 2990 1490 3000 1500 3000 1505 2985 1500 2990 5 1505 3005 1495 3005 1505 3010 1500 3005 1490 2990 1495 2995 1500 3
+000 1490 5 2990 1500 2985 1495 2995 1495 2990 1490 2980 1500 2995 1495 3005 1500 2990 1500 3000                                                                                                           
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0000
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_1_mean /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0000 0 1
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0001
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_1_mean /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0001 1 1
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0002
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0003
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0004
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0005
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0006
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0007
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0008
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0009
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0010
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0011
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0012
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0013
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0014
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0015
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0016
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0017
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_1_mean /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0017 17 1
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0018
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0019
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0020
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0021
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0022
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0023
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0024
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0025
+basic_preproc.sh: Posbvals i: 2980
+basic_preproc.sh: cnt: 0026
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0027
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0028
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0029
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0030
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0031
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0032
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0033
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_1_mean /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0033 33 1
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0034
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0035
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0036
+basic_preproc.sh: Posbvals i: 2980
+basic_preproc.sh: cnt: 0037
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0038
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0039
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0040
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0041
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0042
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0043
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0044
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0045
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0046
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0047
+basic_preproc.sh: Posbvals i: 1485
+basic_preproc.sh: cnt: 0048
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0049
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_1_mean /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0049 49 1
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0050
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0051
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0052
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0053
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0054
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0055
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0056
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0057
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0058
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0059
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0060
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0061
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0062
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0063
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0064
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0065
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_1_mean /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0065 65 1
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0066
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0067
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0068
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0069
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0070
+basic_preproc.sh: Posbvals i: 3010
+basic_preproc.sh: cnt: 0071
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0072
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0073
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0074
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0075
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0076
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0077
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0078
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0079
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0080
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0081
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_1_mean /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0081 81 1
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0082
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0083
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0084
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0085
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0086
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0087
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0088
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0089
+basic_preproc.sh: Posbvals i: 2980
+basic_preproc.sh: cnt: 0090
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0091
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0092
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0093
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0094
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0095
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0096
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0097
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0098
+basic_preproc.sh: About to fslmerge -t /study/HCA6002236/Diffusion/rawdata/Neg_1_mean /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0000.nii.gz /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0001.nii.gz /st
+udy/HCA6002236/Diffusion/rawdata/Neg_1_b0_0017.nii.gz /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0033.nii.gz /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0049.nii.gz /study/HCA6002236/Diffusion/rawdata
+/Neg_1_b0_0065.nii.gz /study/HCA6002236/Diffusion/rawdata/Neg_1_b0_0081.nii.gz                                                                                                                            
+basic_preproc.sh: About to fslmaths /study/HCA6002236/Diffusion/rawdata/Neg_1_mean -Tmean /study/HCA6002236/Diffusion/rawdata/Neg_1_mean
+basic_preproc.sh: Processing /study/HCA6002236/Diffusion/rawdata/Neg_2
+basic_preproc.sh: About to fslmaths /study/HCA6002236/Diffusion/rawdata/Neg_2.nii.gz -Xmean -Ymean -Zmean /study/HCA6002236/Diffusion/rawdata/Neg_2_mean
+basic_preproc.sh: Getting Posbvals from /study/HCA6002236/Diffusion/rawdata/Neg_2.bval
+basic_preproc.sh: Posbvals: 5 5 1500 2985 1495 2995 1495 2995 1490 2985 1490 3005 1500 2990 1500 2995 1490 5 2990 1500 2985 1500 3000 1505 2990 1500 2990 1505 2985 1490 3005 1495 2985 5 1495 3000 1500 29
+90 1495 3005 1505 2990 1505 3005 1490 2980 1495 2990 1505 5 2995 1495 2980 1495 2995 1495 3000 1500 2985 1505 3000 1505 2985 1495 2985 5 1490 3000 1500 3010 1490 2990 1500 2990 1495 3000 1500 2990 1495 3
+000 1495 5 2985 1495 3000 1510 2995 1495 2990 1500 3005 1505 2995 1500 2985 1505 2985 1505 2985 1505                                                                                                      
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0000
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_2_mean /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0000 0 1
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0001
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_2_mean /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0001 1 1
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0002
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0003
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0004
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0005
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0006
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0007
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0008
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0009
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0010
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0011
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0012
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0013
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0014
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0015
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0016
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0017
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_2_mean /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0017 17 1
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0018
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0019
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0020
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0021
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0022
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0023
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0024
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0025
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0026
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0027
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0028
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0029
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0030
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0031
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0032
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0033
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_2_mean /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0033 33 1
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0034
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0035
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0036
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0037
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0038
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0039
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0040
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0041
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0042
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0043
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0044
+basic_preproc.sh: Posbvals i: 2980
+basic_preproc.sh: cnt: 0045
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0046
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0047
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0048
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0049
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_2_mean /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0049 49 1
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0050
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0051
+basic_preproc.sh: Posbvals i: 2980
+basic_preproc.sh: cnt: 0052
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0053
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0054
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0055
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0056
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0057
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0058
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0059
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0060
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0061
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0062
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0063
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0064
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0065
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_2_mean /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0065 65 1
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0066
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0067
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0068
+basic_preproc.sh: Posbvals i: 3010
+basic_preproc.sh: cnt: 0069
+basic_preproc.sh: Posbvals i: 1490
+basic_preproc.sh: cnt: 0070
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0071
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0072
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0073
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0074
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0075
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0076
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0077
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0078
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0079
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0080
+basic_preproc.sh: Posbvals i: 5
+basic_preproc.sh: cnt: 0081
+basic_preproc.sh: About to fslroi /study/HCA6002236/Diffusion/rawdata/Neg_2_mean /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0081 81 1
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0082
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0083
+basic_preproc.sh: Posbvals i: 3000
+basic_preproc.sh: cnt: 0084
+basic_preproc.sh: Posbvals i: 1510
+basic_preproc.sh: cnt: 0085
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0086
+basic_preproc.sh: Posbvals i: 1495
+basic_preproc.sh: cnt: 0087
+basic_preproc.sh: Posbvals i: 2990
+basic_preproc.sh: cnt: 0088
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0089
+basic_preproc.sh: Posbvals i: 3005
+basic_preproc.sh: cnt: 0090
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0091
+basic_preproc.sh: Posbvals i: 2995
+basic_preproc.sh: cnt: 0092
+basic_preproc.sh: Posbvals i: 1500
+basic_preproc.sh: cnt: 0093
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0094
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0095
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0096
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0097
+basic_preproc.sh: Posbvals i: 2985
+basic_preproc.sh: cnt: 0098
+basic_preproc.sh: Posbvals i: 1505
+basic_preproc.sh: cnt: 0099
+basic_preproc.sh: About to fslmerge -t /study/HCA6002236/Diffusion/rawdata/Neg_2_mean /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0000.nii.gz /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0001.nii.gz /st
+udy/HCA6002236/Diffusion/rawdata/Neg_2_b0_0017.nii.gz /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0033.nii.gz /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0049.nii.gz /study/HCA6002236/Diffusion/rawdata
+/Neg_2_b0_0065.nii.gz /study/HCA6002236/Diffusion/rawdata/Neg_2_b0_0081.nii.gz                                                                                                                            
+basic_preproc.sh: About to fslmaths /study/HCA6002236/Diffusion/rawdata/Neg_2_mean -Tmean /study/HCA6002236/Diffusion/rawdata/Neg_2_mean
+Extracting b0s from PE_Positive volumes and creating index and series files
+Extracting b0s from PE_Negative volumes and creating index and series files
+Merging Pos and Neg images
+Perform final merge
+Move files to appropriate directories
+
+ END: basic_preproc
+Wed Jan 16 15:57:16 CST 2019:DiffPreprocPipeline_PreEddy.sh: Running Topup
+
+ START: run_topup
+SSD = 1034.93   n = 209440      Reg = 0 Cost = 1034.93
+SSD = 820.473   n = 209364      Reg = 28.5659   Cost = 849.039
+SSD = 750.73    n = 208220      Reg = 58.353    Cost = 809.083
+SSD = 728.174   n = 207706      Reg = 72.748    Cost = 800.922
+SSD = 719.919   n = 207564      Reg = 78.7216   Cost = 798.64
+SSD = 716.625   n = 207509      Reg = 81.166    Cost = 797.791
+***Going to next resolution level***
+SSD = 1070.71   n = 207509      Reg = 33.8435   Cost = 1104.55
+SSD = 868.736   n = 207837      Reg = 95.6819   Cost = 964.418
+SSD = 796.03    n = 207986      Reg = 136.565   Cost = 932.595
+SSD = 770.877   n = 208037      Reg = 152.979   Cost = 923.855
+SSD = 761.138   n = 208044      Reg = 159.692   Cost = 920.829
+SSD = 756.952   n = 208047      Reg = 162.646   Cost = 919.597
+***Going to next resolution level***
+SSD = 1291.37   n = 208047      Reg = 27.7493   Cost = 1319.12
+SSD = 908.18    n = 208458      Reg = 105.107   Cost = 1013.29
+SSD = 773.317   n = 209010      Reg = 156.127   Cost = 929.444
+SSD = 728.006   n = 209297      Reg = 178.224   Cost = 906.23
+SSD = 710.505   n = 209407      Reg = 187.606   Cost = 898.111
+SSD = 702.826   n = 209439      Reg = 191.957   Cost = 894.783
+***Going to next resolution level***
+SSD = 1148.91   n = 209439      Reg = 53.6626   Cost = 1202.57
+SSD = 866.61    n = 209440      Reg = 80.7431   Cost = 947.353
+SSD = 781.266   n = 209440      Reg = 108.649   Cost = 889.916
+SSD = 757.03    n = 209439      Reg = 120.599   Cost = 877.629
+SSD = 748.896   n = 209437      Reg = 124.906   Cost = 873.802
+SSD = 745.361   n = 209437      Reg = 126.75    Cost = 872.111
+***Going to next resolution level***
+SSD = 752.29    n = 209437      Reg = 47.7947   Cost = 800.085
+SSD = 552.748   n = 209431      Reg = 52.7622   Cost = 605.511
+SSD = 495.423   n = 209422      Reg = 68.9517   Cost = 564.375
+SSD = 481.57    n = 209414      Reg = 75.7031   Cost = 557.273
+SSD = 476.881   n = 209406      Reg = 77.9345   Cost = 554.816
+SSD = 474.731   n = 209403      Reg = 78.8417   Cost = 553.573
+***Going to next resolution level***
+SSD = 996.709   n = 1697371     Reg = 160.906   Cost = 1157.61
+SSD = 961.829   n = 1697371     Reg = 155.077   Cost = 1116.91
+SSD = 914.593   n = 1697371     Reg = 147.275   Cost = 1061.87
+SSD = 857.424   n = 1697371     Reg = 138.058   Cost = 995.482
+SSD = 796.388   n = 1697371     Reg = 128.598   Cost = 924.986
+SSD = 758.114   n = 1697371     Reg = 123.009   Cost = 881.124
+SSD = 717.004   n = 1697371     Reg = 117.357   Cost = 834.361
+SSD = 673.414   n = 1697371     Reg = 112.607   Cost = 786.022
+SSD = 646.478   n = 1697371     Reg = 110.428   Cost = 756.906
+SSD = 619.761   n = 1697371     Reg = 109.222   Cost = 728.983
+SSD = 602.18    n = 1697371     Reg = 109.148   Cost = 711.328
+***Going to next resolution level***
+SSD = 1230.76   n = 1697371     Reg = 21.3771   Cost = 1252.13
+SSD = 1216.5    n = 1697371     Reg = 21.1794   Cost = 1237.68
+SSD = 1195.56   n = 1697371     Reg = 20.9202   Cost = 1216.48
+SSD = 1165.12   n = 1697371     Reg = 20.589    Cost = 1185.71
+SSD = 1127.4    n = 1697371     Reg = 20.2771   Cost = 1147.68
+SSD = 1109.06   n = 1697371     Reg = 20.2001   Cost = 1129.26
+SSD = 1053.31   n = 1697371     Reg = 20.1451   Cost = 1073.45
+SSD = 1024.71   n = 1697371     Reg = 20.4074   Cost = 1045.12
+SSD = 979.051   n = 1697371     Reg = 21.4206   Cost = 1000.47
+SSD = 959.579   n = 1697371     Reg = 22.3623   Cost = 981.941
+SSD = 934.465   n = 1697371     Reg = 24.2036   Cost = 958.668
+***Going to next resolution level***
+SSD = 947.622   n = 1697371     Reg = 0.245444  Cost = 947.868
+SSD = 944.945   n = 1697371     Reg = 0.244708  Cost = 945.19
+SSD = 941.147   n = 1697371     Reg = 0.243655  Cost = 941.391
+SSD = 934.741   n = 1697371     Reg = 0.241971  Cost = 934.983
+SSD = 926.54    n = 1697371     Reg = 0.240169  Cost = 926.78
+SSD = 921.785   n = 1697371     Reg = 0.239332  Cost = 922.024
+SSD = 908.761   n = 1697371     Reg = 0.237951  Cost = 908.999
+SSD = 901.262   n = 1697371     Reg = 0.238308  Cost = 901.5
+SSD = 889.19    n = 1697371     Reg = 0.241734  Cost = 889.432
+SSD = 881.015   n = 1697371     Reg = 0.247245  Cost = 881.262
+SSD = 869.117   n = 1697371     Reg = 0.261451  Cost = 869.379
+SSD = 859.567   n = 1697371     Reg = 0.278894  Cost = 859.846
+SSD = 846.823   n = 1697371     Reg = 0.311962  Cost = 847.135
+SSD = 838.797   n = 1697371     Reg = 0.333661  Cost = 839.131
+SSD = 829.555   n = 1697371     Reg = 0.362928  Cost = 829.918
+SSD = 821.312   n = 1697371     Reg = 0.39103   Cost = 821.703
+SSD = 817.318   n = 1697371     Reg = 0.405396  Cost = 817.724
+SSD = 810.487   n = 1697371     Reg = 0.430843  Cost = 810.918
+SSD = 806.836   n = 1697371     Reg = 0.441317  Cost = 807.278
+SSD = 802.89    n = 1697371     Reg = 0.452003  Cost = 803.342
+SSD = 797.089   n = 1697371     Reg = 0.466884  Cost = 797.556
+***Going to next resolution level***
+SSD = 797.089   n = 1697371     Reg = 0.00933769        Cost = 797.098
+SSD = 796.017   n = 1697371     Reg = 0.00932001        Cost = 796.026
+SSD = 794.709   n = 1697371     Reg = 0.00929321        Cost = 794.718
+SSD = 792.478   n = 1697371     Reg = 0.00924126        Cost = 792.488
+SSD = 789.038   n = 1697371     Reg = 0.00915609        Cost = 789.047
+SSD = 787.071   n = 1697371     Reg = 0.00910079        Cost = 787.08
+SSD = 781.802   n = 1697371     Reg = 0.00895719        Cost = 781.811
+SSD = 777.051   n = 1697371     Reg = 0.00881609        Cost = 777.059
+SSD = 771.896   n = 1697371     Reg = 0.00864109        Cost = 771.905
+SSD = 767.687   n = 1697371     Reg = 0.00848351        Cost = 767.696
+SSD = 764.18    n = 1697371     Reg = 0.00833297        Cost = 764.189
+SSD = 761.537   n = 1697371     Reg = 0.00822126        Cost = 761.546
+SSD = 758.859   n = 1697371     Reg = 0.00812431        Cost = 758.867
+SSD = 756.888   n = 1697371     Reg = 0.0080827 Cost = 756.896
+SSD = 755.403   n = 1697371     Reg = 0.00807613        Cost = 755.411
+SSD = 754.177   n = 1697371     Reg = 0.00810476        Cost = 754.185
+SSD = 752.985   n = 1697371     Reg = 0.00816429        Cost = 752.993
+SSD = 752.097   n = 1697371     Reg = 0.00823011        Cost = 752.106
+SSD = 750.773   n = 1697371     Reg = 0.00836842        Cost = 750.782
+SSD = 749.4     n = 1697371     Reg = 0.00853818        Cost = 749.408
+SSD = 747.664   n = 1697371     Reg = 0.00878342        Cost = 747.673
+SSD = 744.867   n = 1697371     Reg = 0.00924417        Cost = 744.876
+SSD = 742.703   n = 1697371     Reg = 0.00960134        Cost = 742.712
+SSD = 739.464   n = 1697371     Reg = 0.010199  Cost = 739.474
+SSD = 736.563   n = 1697371     Reg = 0.0107165 Cost = 736.574
+SSD = 734.582   n = 1697371     Reg = 0.011091  Cost = 734.593
+SSD = 731.517   n = 1697371     Reg = 0.0116717 Cost = 731.529
+SSD = 729.895   n = 1697371     Reg = 0.0119927 Cost = 729.907
+SSD = 727.328   n = 1697371     Reg = 0.0124869 Cost = 727.34
+SSD = 724.972   n = 1697371     Reg = 0.0129645 Cost = 724.985
+SSD = 722.901   n = 1697371     Reg = 0.0134117 Cost = 722.914
+SSD = 720.521   n = 1697371     Reg = 0.0139336 Cost = 720.535
+SSD = 718.106   n = 1697371     Reg = 0.0144891 Cost = 718.121
+SSD = 716.04    n = 1697371     Reg = 0.0149596 Cost = 716.055
+SSD = 713.674   n = 1697371     Reg = 0.0155166 Cost = 713.689
+SSD = 711.765   n = 1697371     Reg = 0.0159671 Cost = 711.781
+SSD = 710.09    n = 1697371     Reg = 0.0163602 Cost = 710.106
+SSD = 708.235   n = 1697371     Reg = 0.0168094 Cost = 708.252
+SSD = 706.857   n = 1697371     Reg = 0.0170975 Cost = 706.874
+SSD = 705.357   n = 1697371     Reg = 0.01742   Cost = 705.374
+SSD = 704.033   n = 1697371     Reg = 0.0176903 Cost = 704.05
+SSD = 702.935   n = 1697371     Reg = 0.0179184 Cost = 702.953
+SSD = 701.525   n = 1697371     Reg = 0.0181956 Cost = 701.543
+SSD = 700.356   n = 1697371     Reg = 0.0184224 Cost = 700.374
+SSD = 698.966   n = 1697371     Reg = 0.0186752 Cost = 698.985
+SSD = 697.738   n = 1697371     Reg = 0.0188929 Cost = 697.757
+SSD = 696.453   n = 1697371     Reg = 0.0191131 Cost = 696.472
+SSD = 695.304   n = 1697371     Reg = 0.0192903 Cost = 695.323
+SSD = 694.075   n = 1697371     Reg = 0.0194765 Cost = 694.095
+SSD = 693.069   n = 1697371     Reg = 0.0196219 Cost = 693.088
+SSD = 692.077   n = 1697371     Reg = 0.0197599 Cost = 692.096
+Applying topup to get a hifi b0
+Running BET on the hifi b0
+
+ END: run_topup
+Wed Jan 16 17:58:03 CST 2019:DiffPreprocPipeline_PreEddy.sh: Completed
+Wed Jan 16 17:58:03 CST 2019 - DiffusionPreprocessingWrapper.sh - 
+Wed Jan 16 17:58:03 CST 2019 - DiffusionPreprocessingWrapper.sh - Eddy_cmd: /export/HCP/Pipelines/DiffusionPreprocessing/DiffPreprocPipeline_Eddy.sh --path=/study --subject=HCA6002236 --detailed-outlier-
+stats=True --replace-outliers=True --nvoxhp=2000 --sep_offs_move=True --rms=True --ff=10 --dont_peas --fwhm=10,0,0,0,0 --ol_nstd=5 --extra-eddy-arg=--with_outliers --extra-eddy-arg=--initrand --extra-edd
+y-arg=--very_verbose                                                                                                                                                                                      
+Wed Jan 16 17:58:03 CST 2019 - DiffusionPreprocessingWrapper.sh - 
+-- DiffPreprocPipeline_Eddy.sh: Specified Command-Line Parameters - Start --
+   StudyFolder: /study
+   Subject: HCA6002236
+   DWIName: Diffusion
+   DetailedOutlierStats: True
+   ReplaceOutliers: True
+   runcmd: 
+   nvoxhp: 2000
+   sep_offs_move: True
+   rms: True
+   ff_val: 10
+   dont_peas: --dont_peas
+   fwhm_value: 10,0,0,0,0
+   resamp_value: 
+   ol_nstd_value: 5
+   extra_eddy_args:  --with_outliers  --initrand  --very_verbose 
+-- DiffPreprocPipeline_Eddy.sh: Specified Command-Line Parameters - End --
+-- DiffPreprocPipeline_Eddy.sh: Environment Variables Used - Start --
+   HCPPIPEDIR_dMRI: /export/HCP/Pipelines/DiffusionPreprocessing/scripts
+-- DiffPreprocPipeline_Eddy.sh: Environment Variables Used - End --
+Wed Jan 16 17:58:03 CST 2019:DiffPreprocPipeline_Eddy.sh: Running Eddy
+Wed Jan 16 17:58:03 CST 2019:DiffPreprocPipeline_Eddy.sh: About to issue the following command to invoke the run_eddy.sh script
+Wed Jan 16 17:58:03 CST 2019:DiffPreprocPipeline_Eddy.sh:  /export/HCP/Pipelines/DiffusionPreprocessing/scripts/run_eddy.sh  --wss  --repol  --nvoxhp=2000  --sep_offs_move  --rms  --ff=10  --ol_nstd=5  -
+g  -w /study/HCA6002236/Diffusion/eddy  --dont_peas  --fwhm=10,0,0,0,0  --extra-eddy-arg=--with_outliers  --extra-eddy-arg=--initrand  --extra-eddy-arg=--very_verbose                                    
+-- run_eddy.sh: Specified Command-Line Options - Start --
+   workingdir: /study/HCA6002236/Diffusion/eddy
+   useGpuVersion: True
+   produceDetailedOutlierStats: True
+   replaceOutliers: True
+   nvoxhp: 2000
+   sep_offs_move: True
+   rms: True
+   ff_val: 10
+   dont_peas: --dont_peas
+   fwhm_value: 10,0,0,0,0
+   resamp_value: 
+   ol_nstd_val: 5
+   extra_eddy_args:  --with_outliers  --initrand  --very_verbose 
+-- run_eddy.sh: Specified Command-Line Options - End --
+-- run_eddy.sh: Environment Variables Used - Start --
+   FSLDIR: /export/fsl-6.0.0
+-- run_eddy.sh: Environment Variables Used - End --
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: INFO: Determined that the FSL version in use is 6.0.0
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: FSL version: 6.0.0
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: INFO: Detected 5.0.9 or newer version of FSL is in use.
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: gpuEnabledEddy: /export/fsl-6.0.0/bin/eddy_cuda
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: stdEddy: /export/fsl-6.0.0/bin/eddy_openmp
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: User requested GPU-enabled version of eddy
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: GPU-enabled version of eddy found: /export/fsl-6.0.0/bin/eddy_cuda
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: eddy executable command to use: /export/fsl-6.0.0/bin/eddy_cuda
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: outlier statistics option: --wss
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: replace outliers option: --repol
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: nvoxhp option: --nvoxhp=2000
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: sep_offs_move option: --sep_offs_move
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: rms option: --rms
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: ff option: --ff=10
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: ol_nstd_option: --ol_nstd=5
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: About to issue the following eddy command: 
+Wed Jan 16 17:58:03 CST 2019:run_eddy.sh: /export/fsl-6.0.0/bin/eddy_cuda --wss --repol --nvoxhp=2000 --sep_offs_move --rms --ff=10 --imain=/study/HCA6002236/Diffusion/eddy/Pos_Neg --mask=/study/HCA60022
+36/Diffusion/eddy/nodif_brain_mask --index=/study/HCA6002236/Diffusion/eddy/index.txt --acqp=/study/HCA6002236/Diffusion/eddy/acqparams.txt --bvecs=/study/HCA6002236/Diffusion/eddy/Pos_Neg.bvecs --bvals=
+/study/HCA6002236/Diffusion/eddy/Pos_Neg.bvals --fwhm=10,0,0,0,0 --topup=/study/HCA6002236/Diffusion/topup/topup_Pos_Neg_b0 --out=/study/HCA6002236/Diffusion/eddy/eddy_unwarped_images --flm=quadratic --d
+ont_peas --ol_nstd=5  --with_outliers  --initrand  --very_verbose                                                                                                                                         
+Reading images
+Performing volume-to-volume registration
+Running Register
+
+...................Allocated GPU # 0...................
+thrust::system_error thrown in CudaVolume::common_assignment_from_newimage_vol after resize() with message: function_attributes(): after cudaFuncGetAttributes: invalid device function
+terminate called after throwing an instance of 'thrust::system::system_error'
+  what():  function_attributes(): after cudaFuncGetAttributes: invalid device function
+/export/HCP/Pipelines/DiffusionPreprocessing/scripts/run_eddy.sh: line 380:  2955 Aborted                 (core dumped) ${eddy_command}
+Wed Jan 16 17:58:22 CST 2019:run_eddy.sh: Completed with return value: 134
+Wed Jan 16 17:58:22 CST 2019 - DiffusionPreprocessingWrapper.sh - ABORTING: Eddy_cmd failed with return code: 134
+
+real    136m54.280s
+user    133m48.192s
+sys     1m2.569s
+[tbb@leopardws01 ...ts/HCPpipelinesSingularity(feature/freesurfer_v6_latest)]$ 
