@@ -130,7 +130,7 @@ From: centos:7.6.1810
 	source activate singlepython3
 	export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
 	export HCP_RUN_UTILS=/pipeline_tools/HCPpipelinesRunUtils
-	export FSLDIR=/export/fsl-6.0.0
+	export FSLDIR=/export/fsl-6.0.1
 	source ${FSLDIR}/etc/fslconf/fsl.sh
 	export FSL_DIR="${FSLDIR}"
 	export FREESURFER_HOME=/export/freesurfer-6.0
