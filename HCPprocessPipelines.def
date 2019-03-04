@@ -1,0 +1,157 @@
+Bootstrap: docker
+From: centos:7.6.1810
+
+%help
+	CentOS 7.6.1810 Singularity container for StructuralPreprocessing & FunctionalPreprocessing pipelines
+		
+%labels
+	Version v1.0
+	Maintainer Connectome Coordination Facility
+
+%post
+	yum install -y wget tar gzip unzip git which bzip2 bc hostname tcsh libgomp libGLU libXmu gcc qt5-qtbase libXrender xorg-x11-fonts-Type1 mesa-dri-drivers mesa-libGL-devel
+	mkdir -p /pipeline_tools/HCPpipelinesRunUtils
+	mkdir -p /HCP/intradb/archive
+	mkdir -p /HCP/hcpdb/archive
+	mkdir -p /HCP/hcpdb/build_ssd
+	
+	##########	Need gradient_coefficient_files!!!	&&	freesurfer license key file from https://surfer.nmr.mgh.harvard.edu/fswiki/License
+	mkdir -p /export/HCP/gradient_coefficient_files
+	mkdir -p /export/freesurfer_license
+	cd /pipeline_tools
+	
+	####	hcp_pipelines_run_utils v1.3.0
+	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.3.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
+	tar xvf hcp_pipelines_run_utils.tar.gz -C /pipeline_tools/HCPpipelinesRunUtils --strip-components=1
+	rm hcp_pipelines_run_utils.tar.gz
+
+	####	miniconda
+	wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /pipeline_tools/miniconda.sh
+	bash /pipeline_tools/miniconda.sh -b -p /opt/miniconda
+	rm /pipeline_tools/miniconda.sh
+	export PATH=/opt/miniconda/bin:${PATH}
+	conda create -y --name singlepython3 python=3
+	source activate singlepython3
+	conda install -y requests
+	conda install -y pyqt
+	
+	####	install freesurfer-6.0
+	wget ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.0/freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz
+	mkdir -p /export/freesurfer-6.0
+	tar -C /export/freesurfer-6.0 -xzvf freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz --strip-components=1 \
+		--exclude='freesurfer/trctrain' \
+		--exclude='freesurfer/average/SVIP*' \
+		--exclude='freesurfer/average/*/*' \
+		--exclude='freesurfer/lib/qt' \
+		--exclude='freesurfer/subjects/bert' \
+		--exclude='freesurfer/subjects/cvs_avg35*' \
+		--exclude='freesurfer/subjects/sample-00*' \
+		--exclude='freesurfer/subjects/fsaverage?' \
+		--exclude='freesurfer/subjects/fsaverage_sym' \
+		--exclude='freesurfer/docs/*/*' \
+		--exclude='freesurfer/fsfast/docs/*' \
+		--exclude='freesurfer/mni/mni.srcbuild.June2015.tgz'
+	rm freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz
+
+	####	install epd-7.3.2
+	wget https://www.clear.rice.edu/comp140/downloads/epd/linux/epd-7.3-2-rh5-x86_64.sh
+	mkdir -p /export/HCP/epd-7.3.2
+	bash epd-7.3-2-rh5-x86_64.sh -b -p /export/HCP/epd-7.3.2
+	rm epd-7.3-2-rh5-x86_64.sh
+	rm -rf /export/HCP/epd-7.3.2/Examples/*
+	rm -rf /export/HCP/epd-7.3.2/Doc/*
+	
+	export PATH=/export/HCP/epd-7.3.2/bin:${PATH}
+	yum install -y epel-release
+	yum install -y python2-pip.noarch openblas-devel
+	pip2 install numpy
+	pip2 install nibabel==2.3.0 --install-option="--prefix=/export/HCP/epd-7.3.2"
+	
+	yum clean packages
+	rm -rf /var/cache/yum/* 
+	
+	#### 	gradunwarp v1.1.0
+	wget https://github.com/Washington-University/gradunwarp/archive/v1.1.0.tar.gz -O gradunwarp.tar.gz
+	tar -xzvf gradunwarp.tar.gz
+	cd gradunwarp-1.1.0/
+	python setup.py install --prefix=/export/HCP/epd-7.3.2
+	cd /pipeline_tools
+	rm -r gradunwarp-1.1.0
+	rm gradunwarp.tar.gz
+	
+	####	install fsl-6.0.1
+	wget http://www.fmrib.ox.ac.uk/~mwebster/fsl-6.0.1b0-centos7_64.tar.gz 
+	mkdir /export/fsl-6.0.1
+	tar -xvzf fsl-6.0.1b0-centos7_64.tar.gz -C /export/fsl-6.0.1 --strip-components=1
+	bash /export/fsl-6.0.1/etc/fslconf/post_install.sh -f /export/fsl-6.0.1
+	rm fsl-6.0.1b0-centos7_64.tar.gz
+	shopt -s extglob
+	rm -rf /export/fsl-6.0.1/data/!(standard)
+	rm -rf /export/fsl-6.0.1/doc/*
+	rm -rf /export/fsl-6.0.1/fslpython/pkgs/*.tar.bz2
+	rm -rf /export/fsl-6.0.1/src/*
+	rm -rf /export/fsl-6.0.1/extras/src/*
+	
+	####	install MSM_HOCR_v2
+	wget https://www.doc.ic.ac.uk/~ecr05/MSM_HOCR_v2/MSM_HOCR_v2-download.tgz
+	tar -xvzf MSM_HOCR_v2-download.tgz --strip-components=2 -C /export/HCP --exclude='MSM_HOCR_v2/MacOSX' --exclude='MSM_HOCR_v2/Ubuntu'
+	rm MSM_HOCR_v2-download.tgz
+	
+	####	install MCR/R2012b/v80
+	wget http://ssd.mathworks.com/supportfiles/MCR_Runtime/R2012b/MCR_R2012b_glnxa64_installer.zip
+	mkdir -p /export/matlab/MCR/R2012b/M
+	unzip MCR_R2012b_glnxa64_installer.zip -d /export/matlab/MCR/R2012b/M
+	/export/matlab/MCR/R2012b/M/install -mode silent -agreeToLicense yes -destinationFolder /export/matlab/MCR/R2012b
+	rm -rf /export/matlab/MCR/R2012b/M
+	rm MCR_R2012b_glnxa64_installer.zip
+	ln -s /export/matlab/MCR/R2012b/v80 /export/freesurfer-6.0/MCRv80
+
+	####	install workbench
+	wget https://ftp.humanconnectome.org/workbench/workbench-rh_linux64-v1.3.2.zip
+	unzip workbench-rh_linux64-v1.3.2.zip -d /export/HCP/
+	rm workbench-rh_linux64-v1.3.2.zip
+	rm -f /export/HCP/workbench/plugins_rh_linux64/plugins.zip
+	
+	####	HCPpipelines
+	wget https://github.com/Washington-University/HCPpipelines/archive/feature/freesurfer_v6_latest.tar.gz
+	mkdir -p /export/HCP/Pipelines
+	tar xvf freesurfer_v6_latest.tar.gz -C /export/HCP/Pipelines --strip-components=1
+	rm freesurfer_v6_latest.tar.gz
+	
+	ln -s /export/HCP/gradient_coefficient_files/3TPrisma_coeff_AS82_trunc.grad /export/HCP/Pipelines/global/config/3TPrisma_coeff_AS82_trunc.grad
+	ln -s /export/HCP/gradient_coefficient_files/coeff_SC72C_Skyra.grad /export/HCP/Pipelines/global/config/coeff_SC72C_Skyra.grad
+	ln -s /export/HCP/gradient_coefficient_files/trunc.CMRR_7TAS_coeff_SC72CD.grad /export/HCP/Pipelines/global/config/trunc.CMRR_7TAS_coeff_SC72CD.grad
+	ln -s /export/HCP/gradient_coefficient_files/CMRR_3TPrisma_coeff_AS82_trunc.grad /export/HCP/Pipelines/global/config/CMRR_3TPrisma_coeff_AS82_trunc.grad
+	ln -s /export/HCP/gradient_coefficient_files/Prisma_3T_coeff_AS82.grad /export/HCP/Pipelines/global/config/Prisma_3T_coeff_AS82.grad
+	ln -s /export/freesurfer_license/license.txt /export/freesurfer-6.0/license.txt
+
+%environment
+	export PATH=/opt/miniconda/bin:${PATH}
+	source activate singlepython3
+	export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+	export HCP_RUN_UTILS=/pipeline_tools/HCPpipelinesRunUtils
+	export FSLDIR=/export/fsl-6.0.0
+	source ${FSLDIR}/etc/fslconf/fsl.sh
+	export FSL_DIR="${FSLDIR}"
+	export FREESURFER_HOME=/export/freesurfer-6.0
+	source ${FREESURFER_HOME}/SetUpFreeSurfer.sh
+	export EPD_PYTHON_HOME=/export/HCP/epd-7.3.2
+	export PATH=${EPD_PYTHON_HOME}/bin:${PATH}
+	export CARET7DIR=/export/HCP/workbench/bin_rh_linux64
+	export HCPPIPEDIR=/export/HCP/Pipelines
+	export HCPPIPEDIR_Config=${HCPPIPEDIR}/global/config
+	export HCPPIPEDIR_Global=${HCPPIPEDIR}/global/scripts
+	export HCPPIPEDIR_Templates=${HCPPIPEDIR}/global/templates
+	export HCPPIPEDIR_PreFS=${HCPPIPEDIR}/PreFreeSurfer/scripts
+	export HCPPIPEDIR_FS=${HCPPIPEDIR}/FreeSurfer/scripts
+	export HCPPIPEDIR_PostFS=${HCPPIPEDIR}/PostFreeSurfer/scripts
+	export HCPPIPEDIR_fMRISurf=${HCPPIPEDIR}/fMRISurface/scripts
+	export HCPPIPEDIR_fMRIVol=${HCPPIPEDIR}/fMRIVolume/scripts
+	export HCPPIPEDIR_dMRI=${HCPPIPEDIR}/DiffusionPreprocessing/scripts
+	export HCPPIPEDIR_tfMRIAnalysis=${HCPPIPEDIR}/TaskfMRIAnalysis/scripts
+	export MSMBINDIR=/export/HCP/MSM_HOCR_v2/Centos
+	export MSMCONFIGDIR=${HCPPIPEDIR}/MSMConfig
+	export CLUSTER="2.0"
+	export PYTHONPATH=${HCP_RUN_UTILS}/lib	
+	export PATH=${HCPPIPEDIR}/FreeSurfer/custom:${PATH}	
+	
