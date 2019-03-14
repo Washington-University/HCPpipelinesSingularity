@@ -92,10 +92,11 @@ From: centos:7.6.1810
 	rm -rf /export/fsl-6.0.1/src/*
 	rm -rf /export/fsl-6.0.1/extras/src/*
 	
-	####	install MSM_HOCR_v2
-	wget https://www.doc.ic.ac.uk/~ecr05/MSM_HOCR_v2/MSM_HOCR_v2-download.tgz
-	tar -xvzf MSM_HOCR_v2-download.tgz --strip-components=2 -C /export/HCP --exclude='MSM_HOCR_v2/MacOSX' --exclude='MSM_HOCR_v2/Ubuntu'
-	rm MSM_HOCR_v2-download.tgz
+	####	MSM_HOCR_v1
+	wget https://github.com/ecr05/MSM_HOCR/releases/download/1.0/msm_centos
+	mkdir -p /export/HCP/MSM_HOCR_v1/Centos
+	mv msm_centos /export/HCP/MSM_HOCR_v1/Centos/msm
+	chmod 755 /export/HCP/MSM_HOCR_v1/Centos/msm
 	
 	####	install MCR/R2012b/v80
 	wget http://ssd.mathworks.com/supportfiles/MCR_Runtime/R2012b/MCR_R2012b_glnxa64_installer.zip
@@ -149,7 +150,7 @@ From: centos:7.6.1810
 	export HCPPIPEDIR_fMRIVol=${HCPPIPEDIR}/fMRIVolume/scripts
 	export HCPPIPEDIR_dMRI=${HCPPIPEDIR}/DiffusionPreprocessing/scripts
 	export HCPPIPEDIR_tfMRIAnalysis=${HCPPIPEDIR}/TaskfMRIAnalysis/scripts
-	export MSMBINDIR=/export/HCP/MSM_HOCR_v2/Centos
+	export MSMBINDIR=/export/HCP/MSM_HOCR_v1/Centos
 	export MSMCONFIGDIR=${HCPPIPEDIR}/MSMConfig
 	export CLUSTER="2.0"
 	export PYTHONPATH=${HCP_RUN_UTILS}/lib	
