@@ -15,13 +15,13 @@ From: centos:7.6.1810
 	mkdir -p /HCP/hcpdb/archive
 	mkdir -p /HCP/hcpdb/build_ssd
 	
-	##########	Need gradient_coefficient_files!!!	&&	freesurfer license key file from https://surfer.nmr.mgh.harvard.edu/fswiki/License
+	##########	Need gradient_coefficient_files!!! && freesurfer license key file from https://surfer.nmr.mgh.harvard.edu/fswiki/License
 	mkdir -p /export/HCP/gradient_coefficient_files
 	mkdir -p /export/freesurfer_license
 	cd /pipeline_tools
 	
-	####	hcp_pipelines_run_utils v1.3.0
-	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.3.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
+	####	hcp_pipelines_run_utils v1.4.0
+	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.4.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
 	tar xvf hcp_pipelines_run_utils.tar.gz -C /pipeline_tools/HCPpipelinesRunUtils --strip-components=1
 	rm hcp_pipelines_run_utils.tar.gz
 
@@ -80,11 +80,11 @@ From: centos:7.6.1810
 	rm gradunwarp.tar.gz
 	
 	####	install fsl-6.0.1
-	wget http://www.fmrib.ox.ac.uk/~mwebster/fsl-6.0.1b0-centos7_64.tar.gz 
+	wget https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.1-centos7_64.tar.gz
 	mkdir /export/fsl-6.0.1
-	tar -xvzf fsl-6.0.1b0-centos7_64.tar.gz -C /export/fsl-6.0.1 --strip-components=1
+	tar -xvzf fsl-6.0.1-centos7_64.tar.gz -C /export/fsl-6.0.1 --strip-components=1
 	bash /export/fsl-6.0.1/etc/fslconf/post_install.sh -f /export/fsl-6.0.1
-	rm fsl-6.0.1b0-centos7_64.tar.gz
+	rm fsl-6.0.1-centos7_64.tar.gz
 	shopt -s extglob
 	rm -rf /export/fsl-6.0.1/data/!(standard)
 	rm -rf /export/fsl-6.0.1/doc/*
