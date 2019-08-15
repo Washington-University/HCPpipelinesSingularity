@@ -63,7 +63,7 @@ From: centos:7.6.1810
 	export PATH=/export/HCP/epd-7.3.2/bin:${PATH}
 	yum install -y epel-release
 	yum install -y python2-pip.noarch openblas-devel
-	pip2 install numpy
+	pip2 install numpy==1.16.2
 	pip2 install nibabel==2.3.0 --install-option="--prefix=/export/HCP/epd-7.3.2"
 	
 	yum clean packages
