@@ -5,23 +5,23 @@ From: centos:7.6.1810
 	CentOS 7.6.1810 Singularity container for StructuralPreprocessing & FunctionalPreprocessing pipelines
 		
 %labels
-	Version v1.0
+	Version v1.1
 	Maintainer Connectome Coordination Facility
 
 %post
 	yum install -y wget tar gzip unzip git which bzip2 bc hostname tcsh libgomp libGLU libXmu gcc qt5-qtbase libXrender xorg-x11-fonts-Type1 mesa-dri-drivers mesa-libGL-devel
 	mkdir -p /pipeline_tools/HCPpipelinesRunUtils
-	mkdir -p /HCP/intradb/archive
-	mkdir -p /HCP/hcpdb/archive
-	mkdir -p /HCP/hcpdb/build_ssd
+	mkdir -p /NRG-data/NRG/intradb/archive
+	mkdir -p /NRG-data/NRG/hcpdb/archive
+	mkdir -p /NRG-data/NRG/hcpdb/build_ssd
 	
 	##########	Need gradient_coefficient_files!!! && freesurfer license key file from https://surfer.nmr.mgh.harvard.edu/fswiki/License
 	mkdir -p /export/HCP/gradient_coefficient_files
 	mkdir -p /export/freesurfer_license
 	cd /pipeline_tools
 	
-	####	hcp_pipelines_run_utils v1.4.0
-	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.4.0.tar.gz -O hcp_pipelines_run_utils.tar.gz
+	####	hcp_pipelines_run_utils v1.4.1
+	wget https://github.com/Washington-University/HCPpipelinesRunUtils/archive/v1.4.1.tar.gz -O hcp_pipelines_run_utils.tar.gz
 	tar xvf hcp_pipelines_run_utils.tar.gz -C /pipeline_tools/HCPpipelinesRunUtils --strip-components=1
 	rm hcp_pipelines_run_utils.tar.gz
 
@@ -32,7 +32,6 @@ From: centos:7.6.1810
 	export PATH=/opt/miniconda/bin:${PATH}
 	conda create -y --name singlepython3 python=3
 	source activate singlepython3
-	conda install -y requests
 	conda install -y pyqt
 	
 	####	install freesurfer-6.0
@@ -91,7 +90,7 @@ From: centos:7.6.1810
 	rm -rf /export/fsl-6.0.1/fslpython/pkgs/*.tar.bz2
 	rm -rf /export/fsl-6.0.1/src/*
 	rm -rf /export/fsl-6.0.1/extras/src/*
-	
+		
 	####	MSM_HOCR_v3
 	wget https://github.com/ecr05/MSM_HOCR/releases/download/1.0/msm_centos
 	mkdir -p /export/HCP/MSM_HOCR_v3/Centos
@@ -113,8 +112,8 @@ From: centos:7.6.1810
 	rm workbench-rh_linux64-v1.3.2.zip
 	rm -f /export/HCP/workbench/plugins_rh_linux64/plugins.zip
 	
-	####	HCPpipelines v4.0.0
-	wget https://github.com/Washington-University/HCPpipelines/archive/v4.0.0.tar.gz -O hcp_pipelines.tar.gz
+	####	HCPpipelines v4.0.1
+	wget https://github.com/Washington-University/HCPpipelines/archive/v4.0.1.tar.gz -O hcp_pipelines.tar.gz
 	mkdir -p /export/HCP/Pipelines
 	tar xvf hcp_pipelines.tar.gz -C /export/HCP/Pipelines --strip-components=1
 	rm hcp_pipelines.tar.gz
@@ -150,9 +149,9 @@ From: centos:7.6.1810
 	export HCPPIPEDIR_fMRIVol=${HCPPIPEDIR}/fMRIVolume/scripts
 	export HCPPIPEDIR_dMRI=${HCPPIPEDIR}/DiffusionPreprocessing/scripts
 	export HCPPIPEDIR_tfMRIAnalysis=${HCPPIPEDIR}/TaskfMRIAnalysis/scripts
-	export MSMBINDIR=/export/HCP/MSM_HOCR_v1/Centos
+	export MSMBINDIR=/export/HCP/MSM_HOCR_v3/Centos
 	export MSMCONFIGDIR=${HCPPIPEDIR}/MSMConfig
 	export CLUSTER="2.0"
 	export PYTHONPATH=${HCP_RUN_UTILS}/lib	
-	export PATH=${HCPPIPEDIR}/FreeSurfer/custom:${PATH}	
+	export PATH=${HCPPIPEDIR}/FreeSurfer/custom:${PATH}
 	
