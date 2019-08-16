@@ -118,10 +118,8 @@ From: centos:7.6.1810
 	tar xvf hcp_pipelines.tar.gz -C /export/HCP/Pipelines --strip-components=1
 	rm hcp_pipelines.tar.gz
 	
-	ln -s /export/HCP/gradient_coefficient_files/3TPrisma_coeff_AS82_trunc.grad /export/HCP/Pipelines/global/config/3TPrisma_coeff_AS82_trunc.grad
 	ln -s /export/HCP/gradient_coefficient_files/coeff_SC72C_Skyra.grad /export/HCP/Pipelines/global/config/coeff_SC72C_Skyra.grad
 	ln -s /export/HCP/gradient_coefficient_files/trunc.CMRR_7TAS_coeff_SC72CD.grad /export/HCP/Pipelines/global/config/trunc.CMRR_7TAS_coeff_SC72CD.grad
-	ln -s /export/HCP/gradient_coefficient_files/CMRR_3TPrisma_coeff_AS82_trunc.grad /export/HCP/Pipelines/global/config/CMRR_3TPrisma_coeff_AS82_trunc.grad
 	ln -s /export/HCP/gradient_coefficient_files/Prisma_3T_coeff_AS82.grad /export/HCP/Pipelines/global/config/Prisma_3T_coeff_AS82.grad
 	ln -s /export/freesurfer_license/license.txt /export/freesurfer-6.0/license.txt
 
@@ -151,7 +149,6 @@ From: centos:7.6.1810
 	export HCPPIPEDIR_tfMRIAnalysis=${HCPPIPEDIR}/TaskfMRIAnalysis/scripts
 	export MSMBINDIR=/export/HCP/MSM_HOCR_v3/Centos
 	export MSMCONFIGDIR=${HCPPIPEDIR}/MSMConfig
-	export CLUSTER="2.0"
 	export PYTHONPATH=${HCP_RUN_UTILS}/lib	
 	export PATH=${HCPPIPEDIR}/FreeSurfer/custom:${PATH}
 	
