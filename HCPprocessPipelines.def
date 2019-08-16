@@ -114,13 +114,13 @@ From: centos:7.6.1810
 	
 	####	HCPpipelines v4.0.1
 	wget https://github.com/Washington-University/HCPpipelines/archive/v4.0.1.tar.gz -O hcp_pipelines.tar.gz
-	mkdir -p /export/HCP/Pipelines
-	tar xvf hcp_pipelines.tar.gz -C /export/HCP/Pipelines --strip-components=1
+	mkdir -p /export/HCP/HCPpipelines
+	tar xvf hcp_pipelines.tar.gz -C /export/HCP/HCPpipelines --strip-components=1
 	rm hcp_pipelines.tar.gz
 	
-	ln -s /export/HCP/gradient_coefficient_files/coeff_SC72C_Skyra.grad /export/HCP/Pipelines/global/config/coeff_SC72C_Skyra.grad
-	ln -s /export/HCP/gradient_coefficient_files/trunc.CMRR_7TAS_coeff_SC72CD.grad /export/HCP/Pipelines/global/config/trunc.CMRR_7TAS_coeff_SC72CD.grad
-	ln -s /export/HCP/gradient_coefficient_files/Prisma_3T_coeff_AS82.grad /export/HCP/Pipelines/global/config/Prisma_3T_coeff_AS82.grad
+	ln -s /export/HCP/gradient_coefficient_files/coeff_SC72C_Skyra.grad /export/HCP/HCPpipelines/global/config/coeff_SC72C_Skyra.grad
+	ln -s /export/HCP/gradient_coefficient_files/trunc.CMRR_7TAS_coeff_SC72CD.grad /export/HCP/HCPpipelines/global/config/trunc.CMRR_7TAS_coeff_SC72CD.grad
+	ln -s /export/HCP/gradient_coefficient_files/Prisma_3T_coeff_AS82.grad /export/HCP/HCPpipelines/global/config/Prisma_3T_coeff_AS82.grad
 	ln -s /export/freesurfer_license/license.txt /export/freesurfer-6.0/license.txt
 
 %environment
@@ -136,7 +136,7 @@ From: centos:7.6.1810
 	export EPD_PYTHON_HOME=/export/HCP/epd-7.3.2
 	export PATH=${EPD_PYTHON_HOME}/bin:${PATH}
 	export CARET7DIR=/export/HCP/workbench/bin_rh_linux64
-	export HCPPIPEDIR=/export/HCP/Pipelines
+	export HCPPIPEDIR=/export/HCP/HCPpipelines
 	export HCPPIPEDIR_Config=${HCPPIPEDIR}/global/config
 	export HCPPIPEDIR_Global=${HCPPIPEDIR}/global/scripts
 	export HCPPIPEDIR_Templates=${HCPPIPEDIR}/global/templates
