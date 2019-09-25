@@ -1,0 +1,122 @@
+Bootstrap: docker
+From: centos:7.6.1810
+
+%help
+	CentOS 7.6.1810 Singularity container for Multirun ICA FIX pipelines
+	
+%labels
+	Version v1.0
+	Maintainer Connectome Coordination Facility	
+
+%post
+	yum install -y wget tar gzip unzip git which bzip2 bc hostname tcsh libgomp libGLU libXmu gcc qt5-qtbase libXrender xorg-x11-fonts-Type1 mesa-dri-drivers mesa-libGL-devel
+	mkdir /pipeline_tools
+	cd /pipeline_tools
+	
+	#### Install R & packages
+	yum install -y epel-release
+	yum install -y openblas-devel R.x86_64
+	
+	####	install fsl-6.0.1
+	wget https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.1-centos7_64.tar.gz
+	mkdir -p /export/fsl-6.0.1
+	tar -xvzf fsl-6.0.1-centos7_64.tar.gz -C /export/fsl-6.0.1 --strip-components=1
+	bash /export/fsl-6.0.1/etc/fslconf/post_install.sh -f /export/fsl-6.0.1
+	rm fsl-6.0.1-centos7_64.tar.gz
+	shopt -s extglob
+	rm -rf /export/fsl-6.0.1/data/!(standard)
+	rm -rf /export/fsl-6.0.1/doc/*
+	rm -rf /export/fsl-6.0.1/fslpython/pkgs/*.tar.bz2
+	rm -rf /export/fsl-6.0.1/src/*
+	rm -rf /export/fsl-6.0.1/extras/src/*
+	
+	#### FIX-1.067
+	wget https://users.fmrib.ox.ac.uk/~steve/ftp/fix1.067.tar.gz
+	mkdir -p /export/fsl-fix-1.067 
+	tar -xvzf fix1.067.tar.gz -C /export/fsl-fix-1.067 --strip-components=1
+	rm fix1.067.tar.gz
+		
+	####	install MCR/R2014a/v83
+	wget https://www.mathworks.com/supportfiles/downloads/R2014a/deployment_files/R2014a/installers/glnxa64/MCR_R2014a_glnxa64_installer.zip
+	mkdir -p /export/matlab/MCR/R2014a/M
+	unzip MCR_R2014a_glnxa64_installer.zip -d /export/matlab/MCR/R2014a/M
+	/export/matlab/MCR/R2014a/M/install -mode silent -agreeToLicense yes -destinationFolder /export/matlab/MCR/R2014a
+	rm -rf /export/matlab/MCR/R2016b/M
+	rm MCR_R2014a_glnxa64_installer.zip
+	
+	####	install MCR/R2016b/v91
+	wget http://ssd.mathworks.com/supportfiles/downloads/R2016b/deployment_files/R2016b/installers/glnxa64/MCR_R2016b_glnxa64_installer.zip
+	mkdir -p /export/matlab/MCR/R2016b/M
+	unzip MCR_R2016b_glnxa64_installer.zip -d /export/matlab/MCR/R2016b/M
+	/export/matlab/MCR/R2016b/M/install -mode silent -agreeToLicense yes -destinationFolder /export/matlab/MCR/R2016b
+	rm -rf /export/matlab/MCR/R2016b/M
+	rm MCR_R2016b_glnxa64_installer.zip
+	
+	####	install MCR/R2017b/v93
+	wget http://ssd.mathworks.com/supportfiles/downloads/R2017b/deployment_files/R2017b/installers/glnxa64/MCR_R2017b_glnxa64_installer.zip
+	mkdir -p /export/matlab/MCR/R2017b/M
+	unzip MCR_R2017b_glnxa64_installer.zip -d /export/matlab/MCR/R2017b/M
+	/export/matlab/MCR/R2017b/M/install -mode silent -agreeToLicense yes -destinationFolder /export/matlab/MCR/R2017b
+	rm -rf /export/matlab/MCR/R2017b/M
+	rm MCR_R2017b_glnxa64_installer.zip
+	
+	#### installing R packages
+	PACKAGES="mvtnorm_1.0-8 modeltools_0.2-22 zoo_1.8-4 sandwich_2.5-0 strucchange_1.5-1 TH.data_1.0-9 multcomp_1.4-8 coin_1.2-2 bitops_1.0-6 gtools_3.8.1 gdata_2.18.0 caTools_1.17.1.1 gplots_3.0.1 kernlab_0.9-24 ROCR_1.0-7 party_1.0-25 e1071_1.6-7 randomForest_4.6-12"
+	MIRROR="https://cran.r-project.org"
+	for package in $PACKAGES
+	do
+		wget "$MIRROR"/src/contrib/Archive/$(echo "$package" | cut -f1 -d_)/"$package".tar.gz || wget "$MIRROR"/src/contrib/"$package".tar.gz
+		R CMD INSTALL "$package".tar.gz
+		rm "$package".tar.gz
+	done
+	
+	yum clean packages
+	rm -rf /var/cache/yum/* 
+
+	####	install workbench
+	wget https://ftp.humanconnectome.org/workbench/workbench-rh_linux64-v1.3.2.zip
+	unzip workbench-rh_linux64-v1.3.2.zip -d /export/HCP/
+	rm workbench-rh_linux64-v1.3.2.zip
+	rm -f /export/HCP/workbench/plugins_rh_linux64/plugins.zip
+
+	####	HCPpipelines v4.0.0
+	wget https://github.com/Washington-University/HCPpipelines/archive/v4.0.0.tar.gz -O hcp_pipelines.tar.gz
+	rm -rf /export/HCP/Pipelines
+	mkdir -p /export/HCP/Pipelines
+	tar xvf hcp_pipelines.tar.gz -C /export/HCP/Pipelines --strip-components=1
+	rm hcp_pipelines.tar.gz
+	
+%environment
+	export HCP_RUN_UTILS=/pipeline_tools/HCPpipelinesRunUtils
+	export FSLDIR=/export/fsl-6.0.1
+	source ${FSLDIR}/etc/fslconf/fsl.sh
+	export FSL_DIR="${FSLDIR}"
+	export FSL_FIX_MLCDIR=/export/fsl-fix-1.067/compiled/Linux/x86_64
+	export FSL_FIXDIR=/export/fsl-fix-1.067
+	export FSL_FIX_MCRROOT=/export/matlab/MCR/R2014a/v83
+	export FSL_FIX_FSLMATLAB=${FSLDIR}/etc/matlab
+	export FSL_FIX_MCR=/export/matlab/MCR/R2014a/v83
+	export FSL_FIX_MCC=/export/matlab/MCR/R2014a/v83
+	export FSL_FIX_CIFTIRW=/export/HCP/Pipelines/global/matlab
+	export FSL_FIX_MATLAB_MODE=0
+	export FSL_FIX_R_CMD=/usr/bin/R
+	export FSL_FIX_WBC=/export/HCP/workbench/bin_rh_linux64/wb_command
+	export MATLAB_COMPILER_RUNTIME=/export/matlab/MCR/R2016b/v91
+	export CARET7DIR=/export/HCP/workbench/bin_rh_linux64
+	export HCPPIPEDIR=/export/HCP/Pipelines
+	export HCPPIPEDIR_Config=${HCPPIPEDIR}/global/config
+	export HCPPIPEDIR_Global=${HCPPIPEDIR}/global/scripts
+	export HCPPIPEDIR_Templates=${HCPPIPEDIR}/global/templates
+	export HCPPIPEDIR_PreFS=${HCPPIPEDIR}/PreFreeSurfer/scripts
+	export HCPPIPEDIR_FS=${HCPPIPEDIR}/FreeSurfer/scripts
+	export HCPPIPEDIR_PostFS=${HCPPIPEDIR}/PostFreeSurfer/scripts
+	export HCPPIPEDIR_fMRISurf=${HCPPIPEDIR}/fMRISurface/scripts
+	export HCPPIPEDIR_fMRIVol=${HCPPIPEDIR}/fMRIVolume/scripts
+	export HCPPIPEDIR_dMRI=${HCPPIPEDIR}/DiffusionPreprocessing/scripts
+	export HCPPIPEDIR_tfMRIAnalysis=${HCPPIPEDIR}/TaskfMRIAnalysis/scripts
+	export CLUSTER="2.0"
+	export PYTHONPATH=${HCP_RUN_UTILS}/lib
+	export PATH=/export/fsl-6.0.1/bin:${PATH}
+	export LD_LIBRARY_PATH=/export/matlab/MCR/R2014a/v83/runtime/glnxa64:/export/matlab/MCR/R2014a/v83/bin/glnxa64:/export/matlab/MCR/R2014a/v83/sys/os/glnxa64:${LD_LIBRARY_PATH}
+
+	
