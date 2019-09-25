@@ -87,6 +87,7 @@ From: centos:7.6.1810
 	rm hcp_pipelines.tar.gz
 	
 %environment
+	export PATH=/export/HCP/workbench/bin_rh_linux64:${PATH}
 	export HCP_RUN_UTILS=/pipeline_tools/HCPpipelinesRunUtils
 	export FSLDIR=/export/fsl-6.0.1
 	source ${FSLDIR}/etc/fslconf/fsl.sh
