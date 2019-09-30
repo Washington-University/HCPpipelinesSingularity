@@ -91,7 +91,7 @@ From: centos:7.6.1810
 	rm -rf /export/fsl-6.0.1/src/*
 	rm -rf /export/fsl-6.0.1/extras/src/*
 		
-	####	MSM_HOCR_v3
+	####	MSM_HOCR_v3 (tagged as Release "1.0" in the GitHub repo)
 	wget https://github.com/ecr05/MSM_HOCR/releases/download/1.0/msm_centos
 	mkdir -p /export/HCP/MSM_HOCR_v3/Centos
 	mv msm_centos /export/HCP/MSM_HOCR_v3/Centos/msm
